@@ -1,0 +1,33 @@
+EVALUATION - simulated test set: 300 normal IPs, 190 attacker IPs
+(positive class = attacker; 'block' = system ne us IP ko block kiya)
+
+                                    BruteShield ML  Old 5-attempt rule
+Accuracy                                     0.965               0.835
+Precision                                    0.948               0.991
+Recall                                       0.963               0.579
+F1-score                                     0.956               0.731
+Avg attempt jispe attacker block hua             3.6                 5.0
+
+Confusion matrix (BruteShield ML):
+                    block hua   block nahi hua
+  asli attacker           183                7   (TP / FN)
+  asli normal user         10              290   (FP / TN)
+
+Confusion matrix (Old 5-attempt rule):
+                    block hua   block nahi hua
+  asli attacker           110               80   (TP / FN)
+  asli normal user          1              299   (FP / TN)
+
+Attacker types - kitne % pakde gaye:
+  type                                          ML  Old rule
+  fast brute-force                            100%      100%
+  credential stuffing (kai usernames)         100%      100%
+  low-and-slow (dheere, 12-60 sec gap)        100%        0%
+  stealthy (sirf 3-4 attempts)                 77%        0%
+
+Normal users - kitne % galti se block hue (kam = behtar):
+  type                                          ML  Old rule
+  seedha sahi login                             0%        0%
+  1-3 typo phir sahi                            0%        0%
+  password bhoolne wale (3-8 galat)            25%        2%
+  double-click (2 jaldi attempts)               0%        0%

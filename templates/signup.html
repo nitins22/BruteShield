@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BruteShield - Create Account</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .box {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            width: 360px;
+        }
+        h2 { color: #5b1a1a; margin-top: 0; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #5b1a1a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .message {
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .Very-Weak { background: #f8d7da; color: #721c24; }
+        .Weak      { background: #f8d7da; color: #721c24; }
+        .Fair      { background: #fff3cd; color: #856404; }
+        .Strong    { background: #d4edda; color: #155724; }
+        .Very-Strong { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Create Account</h2>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Choose a username" required>
+            <input type="password" name="password" placeholder="Choose a password" required>
+            <button type="submit">Check Strength</button>
+        </form>
+
+                {% if label %}
+            <div class="message {{ label | replace(' ', '-') }}">
+                <strong>Strength: {{ label }} ({{ score }}/4)</strong><br>
+                {{ suggestion }}
+            </div>
+            {% if accepted %}
+                <div class="message Strong"><strong>✓ Account created successfully!</strong></div>
+            {% else %}
+                <div class="message Weak"><strong>✗ Password too weak. Account not created — try a stronger password.</strong></div>
+            {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>
