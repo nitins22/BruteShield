@@ -1,136 +1,278 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>BruteShield - Dashboard</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BruteShield - Security Operations Center Dashboard</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        margin: 0;
-        padding: 30px;
-      }
-      h2 {
-        color: #5b1a1a;
-      }
-      .stats {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 30px;
-      }
-      .card {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        flex: 1;
-        text-align: center;
-      }
-      .card .number {
-        font-size: 28px;
-        font-weight: bold;
-        color: #5b1a1a;
-      }
-      .card .label {
-        font-size: 13px;
-        color: #666;
-        margin-top: 5px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-      th,
-      td {
-        padding: 10px 12px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-        font-size: 13px;
-      }
-      th {
-        background: #5b1a1a;
-        color: white;
-      }
-      .fail {
-        color: #c0392b;
-      }
-      .ok {
-        color: #27ae60;
-        .high { color: #c0392b; font-weight: bold; }
-        .medium { color: #d68910; font-weight: bold; }
-      }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0b1120;
+            color: #e2e8f0;
+            margin: 0;
+            padding: 30px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            margin: 0;
+            color: #38bdf8;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .badge-live {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid #10b981;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-weight: bold;
+        }
+        .top-bar a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .top-bar a:hover {
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        .stat-card {
+            background: #111c30;
+            padding: 22px;
+            border-radius: 10px;
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #38bdf8;
+        }
+        .stat-card.alert-card::before {
+            background: #f43f5e;
+        }
+        .stat-card.warn-card::before {
+            background: #f59e0b;
+        }
+        .stat-card.user-card::before {
+            background: #10b981;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: -0.5px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-title {
+            color: #f8fafc;
+            font-size: 17px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #111c30;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #1e293b;
+            font-size: 13px;
+        }
+        th {
+            background: #0d1527;
+            color: #94a3b8;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .fail {
+            color: #f87171;
+            font-weight: 600;
+        }
+        .ok {
+            color: #34d399;
+            font-weight: 600;
+        }
+        .high {
+            color: #f43f5e;
+            font-weight: 700;
+            background: rgba(244, 63, 94, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .medium {
+            color: #fbbf24;
+            font-weight: 700;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .empty-row {
+            text-align: center;
+            color: #64748b;
+            padding: 20px;
+        }
     </style>
-  </head>
-  <body>
-    <h2>BruteShield Dashboard</h2>
-    <p><a href="/logout">Logout</a></p>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <h2>BruteShield SOC Dashboard <span class="badge-live">LIVE TELEMETRY</span></h2>
+            <div>
+                <a href="/login">Protected Login</a>
+                <a href="/vault">Password Vault</a>
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
 
-    <div class="stats">
-      <div class="card">
-        <div class="number">{{ total_attempts }}</div>
-        <div class="label">Total Login Attempts</div>
-      </div>
-      <div class="card">
-        <div class="number">{{ blocked_count }}</div>
-        <div class="label">Currently Blocked IPs</div>
-      </div>
-      <div class="card">
-        <div class="number">{{ honeypot_count }}</div>
-        <div class="label">Honeypot Attempts</div>
-      </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_attempts }}</div>
+                <div class="stat-label">Total Login Attempts</div>
+            </div>
+            <div class="stat-card alert-card">
+                <div class="stat-number">{{ blocked_count }}</div>
+                <div class="stat-label">Currently Blocked IPs</div>
+            </div>
+            <div class="stat-card warn-card">
+                <div class="stat-number">{{ honeypot_count }}</div>
+                <div class="stat-label">Honeypot Decoy Hits</div>
+            </div>
+            <div class="stat-card user-card">
+                <div class="stat-number">{{ user_count }}</div>
+                <div class="stat-label">Registered Accounts</div>
+            </div>
+        </div>
+
+        <div class="section-title">🚨 Recent Security Alerts</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 140px;">Timestamp</th>
+                    <th style="width: 100px;">Threat Level</th>
+                    <th>Security Incident Narrative</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_alerts %}
+                    {% for a in recent_alerts %}
+                    <tr>
+                        <td>{{ a.time }}</td>
+                        <td>
+                            <span class="{{ 'high' if a.level == 'HIGH' else 'medium' }}">{{ a.level }}</span>
+                        </td>
+                        <td>{{ a.message }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="3" class="empty-row">No security alerts recorded yet.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="section-title">🛡 Recent Authentication Attempts</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Client IP</th>
+                    <th>Username Attempted</th>
+                    <th>Authentication Outcome</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_attempts %}
+                    {% for row in recent_attempts %}
+                    <tr>
+                        <td><code>{{ row.ip }}</code></td>
+                        <td>{{ row.username }}</td>
+                        <td class="{{ 'ok' if row.success else 'fail' }}">
+                            {{ '✓ Authorized' if row.success else '✗ Rejected' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="3" class="empty-row">No login telemetry recorded yet.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="section-title">🍯 Honeypot Decoy Telemetry (/admin-login)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Attacker IP</th>
+                    <th>Targeted Username</th>
+                    <th>Credential Length / Masked Preview</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if recent_honeypot %}
+                    {% for row in recent_honeypot %}
+                    <tr>
+                        <td><code>{{ row.ip }}</code></td>
+                        <td>{{ row.username_tried }}</td>
+                        <td><code>{{ row.password_tried }}</code></td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="3" class="empty-row">No honeypot interactions detected yet.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
     </div>
-
-    <h3>Recent Alerts</h3>
-    <table>
-      <tr>
-        <th>Time</th>
-        <th>Level</th>
-        <th>Message</th>
-      </tr>
-      {% for a in recent_alerts %}
-      <tr>
-        <td>{{ a.time }}</td>
-        <td class="{{ 'high' if a.level == 'HIGH' else 'medium' }}">{{ a.level }}</td>
-        <td>{{ a.message }}</td>
-      </tr>
-      {% endfor %}
-    </table>
-
-    <h3>Recent Login Attempts</h3>
-    <table>
-      <tr>
-        <th>IP</th>
-        <th>Username</th>
-        <th>Result</th>
-      </tr>
-      {% for row in recent_attempts %}
-      <tr>
-        <td>{{ row.ip }}</td>
-        <td>{{ row.username }}</td>
-        <td class="{{ 'ok' if row.success else 'fail' }}">
-          {{ 'Success' if row.success else 'Failed' }}
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-
-    <h3>Recent Honeypot Attempts</h3>
-    <table>
-      <tr>
-        <th>IP</th>
-        <th>Username Tried</th>
-        <th>Password Tried</th>
-      </tr>
-      {% for row in recent_honeypot %}
-      <tr>
-        <td>{{ row.ip }}</td>
-        <td>{{ row.username_tried }}</td>
-        <td>{{ row.password_tried }}</td>
-      </tr>
-      {% endfor %}
-    </table>
-  </body>
+</body>
 </html>

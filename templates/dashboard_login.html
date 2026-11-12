@@ -2,69 +2,147 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>BruteShield - Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BruteShield - Security Operations Center Login</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .box {
-            background: white;
-            padding: 30px 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-            width: 320px;
+            background: #1e293b;
+            padding: 35px 40px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            width: 360px;
         }
-        h2 { color: #5b1a1a; margin-top: 0; }
+        h2 { 
+            color: #f43f5e; 
+            margin-top: 0; 
+            margin-bottom: 6px;
+            font-size: 22px;
+        }
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            background: rgba(244, 63, 94, 0.15);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 18px;
+            font-weight: 600;
+        }
         input {
             width: 100%;
-            padding: 10px;
+            padding: 10px 12px;
             margin: 8px 0;
             box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #f8fafc;
+            font-size: 14px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #f43f5e;
         }
         button {
             width: 100%;
-            padding: 10px;
-            background: #5b1a1a;
+            padding: 11px;
+            background: #e11d48;
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #be123c;
+        }
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            color: #94a3b8;
         }
         .message {
-            margin-top: 12px;
-            padding: 10px;
-            border-radius: 4px;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
             font-size: 13px;
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #f87171;
+            line-height: 1.4;
+        }
+        .captcha-box {
+            background: #0f172a;
+            border: 1px solid #eab308;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin: 12px 0;
+        }
+        .captcha-box p {
+            margin: 0 0 6px 0;
+            color: #fde047;
+            font-size: 13px;
+        }
+        .nav-links {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            margin: 0 8px;
+        }
+        .nav-links a:hover {
+            color: #f8fafc;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>Admin Login</h2>
+        <h2>SOC Admin Portal</h2>
+        <div class="badge">RESTRICTED ACCESS — PROTECTED BY ML ENGINE</div>
+
         <form method="POST">
-            <input type="text" name="username" placeholder="Admin username" {% if blocked %}disabled{% endif %} required>
-            <input type="password" name="password" placeholder="Admin password" {% if blocked %}disabled{% endif %} required>
+            <input type="text" name="username" placeholder="Admin username (dashadmin)" {% if blocked %}disabled{% endif %} required>
+            <input type="password" name="password" placeholder="Admin password (Dash@Admin1)" {% if blocked %}disabled{% endif %} required>
+            
             {% if captcha_question %}
-                <p style="font-size:13px;">Verify you are human: <strong>{{ captcha_question }}</strong></p>
-                <input type="text" name="captcha" placeholder="Answer" required>
+                <div class="captcha-box">
+                    <p>Security Verification: <strong>{{ captcha_question }}</strong></p>
+                    <input type="text" name="captcha" placeholder="Answer" required>
+                </div>
             {% endif %}
-            <button type="submit" {% if blocked %}disabled{% endif %}>Open Dashboard</button>
+
+            <button type="submit" {% if blocked %}disabled{% endif %}>Authenticate to Dashboard</button>
         </form>
 
         {% if message %}
             <div class="message">{{ message }}</div>
         {% endif %}
+
+        <div class="nav-links">
+            <a href="/login">Return to User Login</a>
+            <a href="/signup">Sign Up</a>
+        </div>
     </div>
 </body>
 </html>
