@@ -22,12 +22,12 @@ def index():
     conn = get_db()
     
     if request.method == "POST":
-        service_name = request.form.get("service_name", "").strip()
-        account_username = request.form.get("username", "").strip()
+        service_name = request.form.get("service_name", "").strip()[:128]
+        account_username = request.form.get("username", "").strip()[:128]
         account_password = request.form.get("password", "")
-        notes = request.form.get("notes", "").strip()
+        notes = request.form.get("notes", "").strip()[:1024]
 
-        if service_name and account_username and account_password:
+        if service_name and account_username and account_password and len(account_password) <= 256:
             # Authenticated AES-256-GCM encryption
             b64_cipher, b64_nonce = encrypt_vault_secret(account_password)
             now = time.time()

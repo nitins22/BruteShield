@@ -756,10 +756,14 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('unblock-target-ip').textContent = ip;
         document.getElementById('unblock-confirm-btn').onclick = async () => {
             try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
                 const res = await fetch('/dashboard/api/unblock-ip', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ip })
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ ip, csrf_token: csrfToken })
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -776,8 +780,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.acknowledgeAlert = async function(alertId) {
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             const res = await fetch(`/dashboard/api/threats/acknowledge/${alertId}`, {
-                method: 'POST'
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': csrfToken
+                }
             });
             const data = await res.json();
             if (data.success) {

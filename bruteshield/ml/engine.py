@@ -285,8 +285,9 @@ def get_model_metadata() -> dict:
         try:
             with open(Config.MODEL_PATH, "rb") as f:
                 sha256 = hashlib.sha256(f.read()).hexdigest().upper()
-        except Exception:
-            pass
+        except (OSError, IOError) as e:
+            print(f"[WARN] Failed to compute model hash: {e}")
+            sha256 = None
 
     return {
         "loaded": model is not None,

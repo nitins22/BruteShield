@@ -65,6 +65,7 @@
         <div class="soc-card">
             <div class="soc-card-title" style="margin-bottom:16px;">Add Encrypted Credential</div>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="form-grid">
                     <div>
                         <label class="form-label" style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; display:block;">Service / Application Name</label>
@@ -125,6 +126,7 @@
                             <td><small style="color:var(--text-muted);">{{ item.notes or 'None' }}</small></td>
                             <td>
                                 <form method="POST" action="/vault/delete/{{ item.id }}" style="display:inline;" onsubmit="return confirm('Delete this credential permanently?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 </form>
                             </td>

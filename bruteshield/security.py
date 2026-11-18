@@ -80,7 +80,8 @@ def check_hibp_breached(password: str, timeout: float = 2.0) -> dict:
     if not password:
         return {"is_breached": False, "breach_count": 0, "status": "empty"}
         
-    sha1 = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+    # usedforsecurity=False indicates SHA-1 is used solely for the external HIBP k-Anonymity protocol
+    sha1 = hashlib.sha1(password.encode("utf-8"), usedforsecurity=False).hexdigest().upper()
     prefix = sha1[:5]
     suffix = sha1[5:]
     
@@ -190,11 +191,10 @@ def get_client_ip(req) -> str:
 
 # --- 6. SECURE CAPTCHA GENERATOR ---
 def generate_captcha_challenge() -> dict:
-    """Generates an arithmetic verification challenge with cryptographic tracking token."""
-    import random
-    a = random.randint(3, 9)
-    b = random.randint(2, 9)
-    op = random.choice(["+", "*", "-"])
+    """Generates an arithmetic verification challenge using cryptographically secure random integers."""
+    a = secrets.randbelow(7) + 3  # 3 to 9
+    b = secrets.randbelow(8) + 2  # 2 to 9
+    op = secrets.choice(["+", "*", "-"])
     if op == "-":
         if a < b: a, b = b, a
         answer = a - b

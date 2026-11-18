@@ -1,16 +1,37 @@
 import os
 import secrets
 
+from datetime import timedelta
+
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
+DEFAULT_DEMO_SECRET = "bruteshield-demo-secret-key-change-in-prod-32bytes!"
+DEFAULT_DEMO_VAULT = "bruteshield-vault-master-key-32b"
 
 class Config:
     BASE_DIR = BASE_DIR
-    SECRET_KEY = os.getenv("BRUTESHIELD_SECRET_KEY", "bruteshield-demo-secret-key-change-in-prod-32bytes!")
+    ENV = os.getenv("BRUTESHIELD_ENV", os.getenv("FLASK_ENV", "development")).lower()
+    
+    # In production, require explicit non-default secret keys
+    SECRET_KEY = os.getenv("BRUTESHIELD_SECRET_KEY", DEFAULT_DEMO_SECRET)
+    if ENV == "production" and (SECRET_KEY == DEFAULT_DEMO_SECRET or not SECRET_KEY):
+        raise RuntimeError("CRITICAL: Production deployment requires non-default BRUTESHIELD_SECRET_KEY.")
+
     DB_PATH = os.getenv("BRUTESHIELD_DB_PATH", os.path.join(BASE_DIR, "logs", "bruteshield.db"))
     MODEL_PATH = os.getenv("BRUTESHIELD_MODEL_PATH", os.path.join(BASE_DIR, "trained_model.pkl"))
     
     # 256-bit AES-GCM master key for vault item encryption
-    VAULT_MASTER_KEY = os.getenv("BRUTESHIELD_VAULT_KEY", "bruteshield-vault-master-key-32b").encode("utf-8")[:32].ljust(32, b"0")
+    _vault_key_raw = os.getenv("BRUTESHIELD_VAULT_KEY", DEFAULT_DEMO_VAULT)
+    if ENV == "production" and (_vault_key_raw == DEFAULT_DEMO_VAULT or not _vault_key_raw):
+        raise RuntimeError("CRITICAL: Production deployment requires non-default BRUTESHIELD_VAULT_KEY.")
+    VAULT_MASTER_KEY = _vault_key_raw.encode("utf-8")[:32].ljust(32, b"0")
+
+    # Session Hardening
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = (ENV == "production")
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=60)
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload / payload limit (anti-DoS)
 
     # Threat detection settings
     MAX_FAILED_ATTEMPTS = int(os.getenv("MAX_FAILED_ATTEMPTS", "5"))

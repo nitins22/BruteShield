@@ -48,6 +48,10 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+
+        # Input length validation
+        if len(username) > 64 or len(password) > 256:
+            return render_template("login.html", message="Invalid username or password format.", blocked=False)
         
         # 2. Verify CAPTCHA if challenge was required
         captcha_ok = True
@@ -68,7 +72,7 @@ def login():
         log_attempt(ip, username, success)
 
         if success:
-            session.pop("captcha_answer", None)
+            session.clear()  # Session fixation defense: regenerate session state
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             session["role"] = user["role"]
@@ -118,6 +122,10 @@ def signup():
 
         if not username or not password:
             error_message = "Username and password are required."
+        elif len(username) > 64:
+            error_message = "Username must not exceed 64 characters."
+        elif len(password) > 256:
+            error_message = "Password must not exceed 256 characters."
         else:
             # 1. zxcvbn evaluation
             analysis = zxcvbn(password)

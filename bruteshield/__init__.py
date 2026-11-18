@@ -1,5 +1,6 @@
 import os
-from flask import Flask
+import secrets
+from flask import Flask, request, session, jsonify, abort
 from bruteshield.config import Config
 from bruteshield.database import init_db
 
@@ -13,11 +14,80 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Secure cookie policies
-    app.config["SESSION_COOKIE_HTTPONLY"] = True
-    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_HTTPONLY"] = getattr(config_class, "SESSION_COOKIE_HTTPONLY", True)
+    app.config["SESSION_COOKIE_SAMESITE"] = getattr(config_class, "SESSION_COOKIE_SAMESITE", "Lax")
+    app.config["SESSION_COOKIE_SECURE"] = getattr(config_class, "SESSION_COOKIE_SECURE", False)
 
     # Initialize SQLite database and default seeds
     init_db(app.config["DB_PATH"])
+
+    # --- 1. CSRF Protection Middleware ---
+    def generate_csrf_token():
+        if "_csrf_token" not in session:
+            session["_csrf_token"] = secrets.token_hex(32)
+        return session["_csrf_token"]
+
+    app.jinja_env.globals["csrf_token"] = generate_csrf_token
+
+    @app.before_request
+    def check_csrf_token():
+        # Exempt safe HTTP methods
+        if request.method in ("GET", "HEAD", "OPTIONS", "TRACE"):
+            return None
+
+        # Exempt honeypot decoy (/admin-login) so attacker scripts can be trapped without CSRF tokens
+        if request.path == "/admin-login":
+            return None
+
+        # In testing mode, enforce CSRF only when explicitly enabled (WTF_CSRF_ENABLED: True)
+        if app.config.get("TESTING") and not app.config.get("WTF_CSRF_ENABLED", False):
+            return None
+
+        # Stateless public API password analysis
+        if request.path == "/api/password-analyze":
+            return None
+
+        # Verify CSRF token from header or form body
+        token = request.headers.get("X-CSRF-Token") or request.headers.get("X-CSRFToken")
+        if not token and request.form:
+            token = request.form.get("csrf_token")
+        if not token and request.is_json:
+            token = (request.get_json(silent=True) or {}).get("csrf_token")
+
+        expected = session.get("_csrf_token")
+        if not expected or not token or not secrets.compare_digest(token, expected):
+            if request.path.startswith("/api/") or request.path.startswith("/dashboard/api/"):
+                return jsonify({"error": "CSRF verification failed", "message": "Missing or invalid CSRF token"}), 403
+            abort(403, description="CSRF verification failed")
+
+    # --- 2. Defense-in-Depth Security Response Headers ---
+    @app.after_request
+    def apply_security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data:; "
+            "connect-src 'self' https://api.pwnedpasswords.com; "
+            "frame-ancestors 'self'; "
+            "form-action 'self';"
+        )
+        return response
+
+    # --- 3. Safe Error Handlers (No Stack Traces Leaked) ---
+    @app.errorhandler(403)
+    def forbidden_error(e):
+        if request.path.startswith("/api/") or request.path.startswith("/dashboard/api/"):
+            return jsonify({"error": "Forbidden", "message": str(e.description if hasattr(e, 'description') else "Access Denied")}), 403
+        return f"<div style='font-family:sans-serif; padding:40px; text-align:center;'><h2>403 Forbidden</h2><p>{e.description if hasattr(e, 'description') else 'Access denied.'}</p></div>", 403
+
+    @app.errorhandler(413)
+    def payload_too_large(e):
+        return jsonify({"error": "Payload Too Large", "message": "Request entity exceeds maximum allowable size limit"}), 413
 
     # Register blueprints
     from bruteshield.routes.auth_routes import auth_bp

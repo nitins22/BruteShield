@@ -54,6 +54,9 @@ def dashboard_login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
+        if len(username) > 64 or len(password) > 256:
+            return render_template("dashboard_login.html", message="Invalid admin credentials format.", blocked=False)
+
         captcha_ok = True
         if needs_captcha(ip):
             user_captcha = request.form.get("captcha", "").strip()
@@ -70,7 +73,7 @@ def dashboard_login():
         log_attempt(ip, username, success)
 
         if success:
-            session.pop("captcha_answer", None)
+            session.clear()  # Session fixation defense
             session["is_admin"] = True
             session["user_id"] = user["id"]
             session["username"] = user["username"]
@@ -295,45 +298,45 @@ def api_live_feed():
 
     conn = get_db()
     
-    where_clauses = []
-    params = []
+    search_param = f"%{search}%" if search else None
 
-    if status_filter == "failed":
-        where_clauses.append("la.success = 0")
-    elif status_filter == "success":
-        where_clauses.append("la.success = 1")
-    elif status_filter == "blocked":
-        where_clauses.append("b.blocked_until > ?")
-        params.append(now)
-
-    if search:
-        where_clauses.append("(la.ip LIKE ? OR la.username LIKE ?)")
-        params.extend([f"%{search}%", f"%{search}%"])
-
-    where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-
-    count_query = f"""
+    count_query = """
         SELECT COUNT(*) as cnt 
         FROM login_attempts la
         LEFT JOIN blocked_ips b ON la.ip = b.ip
-        {where_sql}
+        WHERE (? = 'all' 
+               OR (? = 'failed' AND la.success = 0)
+               OR (? = 'success' AND la.success = 1)
+               OR (? = 'blocked' AND b.blocked_until > ?))
+          AND (? IS NULL OR la.ip LIKE ? OR la.username LIKE ?)
     """
-    total_count = conn.execute(count_query, params).fetchone()["cnt"]
+    total_count = conn.execute(count_query, (
+        status_filter, status_filter, status_filter, status_filter, now,
+        search_param, search_param, search_param
+    )).fetchone()["cnt"]
 
-    query = f"""
+    query = """
         SELECT 
             la.id, la.ip, la.username, la.success, la.timestamp,
             CASE WHEN b.blocked_until > ? THEN 1 ELSE 0 END as is_blocked,
             b.blocked_until
         FROM login_attempts la
         LEFT JOIN blocked_ips b ON la.ip = b.ip
-        {where_sql}
+        WHERE (? = 'all' 
+               OR (? = 'failed' AND la.success = 0)
+               OR (? = 'success' AND la.success = 1)
+               OR (? = 'blocked' AND b.blocked_until > ?))
+          AND (? IS NULL OR la.ip LIKE ? OR la.username LIKE ?)
         ORDER BY la.timestamp DESC
         LIMIT ? OFFSET ?
     """
     
-    query_params = [now] + params + [limit, offset]
-    rows = conn.execute(query, query_params).fetchall()
+    rows = conn.execute(query, (
+        now,
+        status_filter, status_filter, status_filter, status_filter, now,
+        search_param, search_param, search_param,
+        limit, offset
+    )).fetchall()
 
     results = []
     for r in rows:
@@ -551,26 +554,25 @@ def api_honeypot():
 
     conn = get_db()
     
-    where_sql = ""
-    params = []
-    if search:
-        where_sql = "WHERE (h.ip LIKE ? OR h.username_tried LIKE ?)"
-        params.extend([f"%{search}%", f"%{search}%"])
+    search_param = f"%{search}%" if search else None
 
-    count_query = f"SELECT COUNT(*) as cnt FROM honeypot_logs h {where_sql}"
-    total = conn.execute(count_query, params).fetchone()["cnt"]
+    count_query = """
+        SELECT COUNT(*) as cnt FROM honeypot_logs h
+        WHERE (? IS NULL OR h.ip LIKE ? OR h.username_tried LIKE ?)
+    """
+    total = conn.execute(count_query, (search_param, search_param, search_param)).fetchone()["cnt"]
 
-    query = f"""
+    query = """
         SELECT h.id, h.ip, h.username_tried, h.password_tried, h.password_length, h.timestamp,
                CASE WHEN b.blocked_until > ? THEN 1 ELSE 0 END as is_blocked,
                b.blocked_until
         FROM honeypot_logs h
         LEFT JOIN blocked_ips b ON h.ip = b.ip
-        {where_sql}
+        WHERE (? IS NULL OR h.ip LIKE ? OR h.username_tried LIKE ?)
         ORDER BY h.timestamp DESC
         LIMIT ? OFFSET ?
     """
-    rows = conn.execute(query, [now] + params + [limit, offset]).fetchall()
+    rows = conn.execute(query, (now, search_param, search_param, search_param, limit, offset)).fetchall()
 
     items = []
     for r in rows:
