@@ -5,8 +5,8 @@ from datetime import timedelta
 
 BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-DEFAULT_DEMO_SECRET = "bruteshield-demo-secret-key-change-in-prod-32bytes!"
-DEFAULT_DEMO_VAULT = "bruteshield-vault-master-key-32b"
+DEFAULT_DEMO_SECRET = "bruteshield-demo-secret-key-change-in-prod-32bytes!"  # nosec B105
+DEFAULT_DEMO_VAULT = "bruteshield-vault-master-key-32b"  # nosec B105
 
 class Config:
     BASE_DIR = BASE_DIR
