@@ -3,219 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BruteShield - Account Registration & Password Security</title>
+    <title>BruteShield — Secure Registration & Cryptographic Password Audit</title>
+    <link rel="stylesheet" href="/static/css/soc-theme.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+        .auth-container {
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 24px;
+            background: radial-gradient(circle at top, #0f2038 0%, #070b14 70%);
         }
-        .box {
-            background: #1e293b;
-            padding: 35px 40px;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            width: 440px;
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 480px;
+            padding: 36px 32px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
         }
-        h2 { 
-            color: #38bdf8; 
-            margin-top: 0;
-            margin-bottom: 8px;
-            font-size: 22px;
+        .auth-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0284c7, #10b981);
         }
-        .subtitle {
-            color: #94a3b8;
+        .auth-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .auth-header h2 {
+            font-size: 20px;
+            color: var(--cyan-primary);
+            margin-bottom: 6px;
+        }
+        .auth-header p {
             font-size: 13px;
-            margin-bottom: 20px;
+            color: var(--text-secondary);
         }
-        label {
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
             display: block;
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 12px;
-            margin-bottom: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-bottom: 6px;
         }
-        input {
-            width: 100%;
-            padding: 10px 12px;
-            box-sizing: border-box;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #f8fafc;
-            font-size: 14px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #38bdf8;
-        }
-        button {
-            width: 100%;
-            padding: 11px;
-            background: #0284c7;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 20px;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #0369a1;
-        }
-        .metrics-card {
-            margin-top: 20px;
-            padding: 16px;
-            border-radius: 8px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            font-size: 13px;
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .metric-item {
+        .meter-bar {
+            height: 6px;
             background: #1e293b;
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid #334155;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-top: 6px;
         }
-        .metric-title {
-            color: #94a3b8;
-            font-size: 11px;
-            text-transform: uppercase;
+        .meter-fill {
+            height: 100%;
+            width: 0%;
+            background: #f43f5e;
+            transition: width 0.2s ease, background-color 0.2s ease;
         }
-        .metric-val {
-            font-weight: bold;
-            font-size: 14px;
-            color: #f8fafc;
-            margin-top: 2px;
-        }
-        .status-msg {
-            margin-top: 14px;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-        .success {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid #10b981;
-            color: #34d399;
-        }
-        .error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid #ef4444;
-            color: #f87171;
-        }
-        .warning {
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid #f59e0b;
-            color: #fbbf24;
-        }
-        .nav-links {
-            margin-top: 18px;
+        .auth-footer {
+            margin-top: 24px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: center;
+            gap: 16px;
         }
-        .nav-links a {
-            color: #38bdf8;
+        .auth-footer a {
+            color: var(--text-secondary);
             text-decoration: none;
-            margin: 0 8px;
+            transition: color 0.15s;
         }
-        .nav-links a:hover {
-            text-decoration: underline;
+        .auth-footer a:hover {
+            color: var(--cyan-primary);
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>BruteShield Registration</h2>
-        <div class="subtitle">Secure account creation with Shannon entropy & HIBP k-anonymity auditing.</div>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>BruteShield Registration</h2>
+                <p>Real-time Shannon entropy & HaveIBeenPwned k-anonymity auditing.</p>
+            </div>
 
-        <form method="POST">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Choose a unique username" required>
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input 
+                        type="text" 
+                        class="soc-input" 
+                        style="width:100%;" 
+                        name="username" 
+                        placeholder="Choose a unique username" 
+                        required 
+                    />
+                </div>
 
-            <label>Password</label>
-            <input type="password" id="password-input" name="password" placeholder="Choose a secure password" required>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        id="password-input" 
+                        class="soc-input" 
+                        style="width:100%;" 
+                        name="password" 
+                        placeholder="Choose a secure password" 
+                        required 
+                    />
+                    <div class="meter-bar">
+                        <div class="meter-fill" id="meter-fill"></div>
+                    </div>
+                    <div id="live-feedback" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></div>
+                </div>
 
-            <button type="submit">Create Account & Audit Password</button>
-        </form>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px; margin-top:8px;">
+                    Create Account & Audit Password
+                </button>
+            </form>
 
-        {% if error_message %}
-            <div class="status-msg error">
+            {% if error_message %}
+            <div class="soc-notice soc-notice-danger" style="margin-top:18px;">
                 <strong>Registration Blocked:</strong> {{ error_message }}
             </div>
-        {% elif accepted %}
-            <div class="status-msg success">
-                <strong>✓ Account Created Successfully!</strong><br>
-                You can now log in with your credentials.
-            </div>
-        {% endif %}
-
-        {% if label %}
-            <div class="metrics-card">
-                <div style="font-weight: 600; color: #38bdf8; margin-bottom: 6px;">
-                    Password Cryptographic Analysis
+            {% elif accepted %}
+            <div class="soc-notice soc-notice-info" style="margin-top:18px;">
+                <div>
+                    <strong>✓ Account Created Successfully!</strong><br>
+                    You can now log in with your credentials.
                 </div>
-                <div><strong>zxcvbn Strength:</strong> {{ label }} (Score: {{ score }}/4)</div>
-                <div style="color: #94a3b8; font-size: 12px; margin-top: 3px;">{{ suggestion }}</div>
+            </div>
+            {% endif %}
+
+            {% if label %}
+            <div class="soc-card" style="margin-top:18px; margin-bottom:0; background:#0f172a; padding:16px;">
+                <div style="font-size:12px; font-weight:700; color:var(--cyan-primary); margin-bottom:6px;">
+                    Cryptographic Strength Breakdown
+                </div>
+                <div style="font-size:13px;"><strong>zxcvbn Strength:</strong> {{ label }} (Score: {{ score }}/4)</div>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">{{ suggestion }}</div>
 
                 {% if entropy_info %}
-                <div class="metrics-grid">
-                    <div class="metric-item">
-                        <div class="metric-title">Shannon Entropy</div>
-                        <div class="metric-val">{{ entropy_info.total_entropy }} bits</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;">
+                    <div style="background:#131d33; padding:8px; border-radius:6px; border:1px solid #1e293b;">
+                        <div style="font-size:10px; color:var(--text-muted);">Shannon Entropy</div>
+                        <div style="font-size:14px; font-weight:bold; color:#f8fafc;">{{ entropy_info.total_entropy }} bits</div>
                     </div>
-                    <div class="metric-item">
-                        <div class="metric-title">Entropy Rating</div>
-                        <div class="metric-val">{{ entropy_info.rating }}</div>
+                    <div style="background:#131d33; padding:8px; border-radius:6px; border:1px solid #1e293b;">
+                        <div style="font-size:10px; color:var(--text-muted);">Entropy Rating</div>
+                        <div style="font-size:14px; font-weight:bold; color:var(--cyan-primary);">{{ entropy_info.rating }}</div>
                     </div>
-                    <div class="metric-item">
-                        <div class="metric-title">Char Pool Size</div>
-                        <div class="metric-val">{{ entropy_info.pool_size }} chars</div>
+                    <div style="background:#131d33; padding:8px; border-radius:6px; border:1px solid #1e293b;">
+                        <div style="font-size:10px; color:var(--text-muted);">Character Pool</div>
+                        <div style="font-size:14px; font-weight:bold; color:#f8fafc;">{{ entropy_info.pool_size }} chars</div>
                     </div>
-                    <div class="metric-item">
-                        <div class="metric-title">Theoretical H</div>
-                        <div class="metric-val">{{ entropy_info.theoretical_entropy }} bits</div>
+                    <div style="background:#131d33; padding:8px; border-radius:6px; border:1px solid #1e293b;">
+                        <div style="font-size:10px; color:var(--text-muted);">Theoretical Pool H</div>
+                        <div style="font-size:14px; font-weight:bold; color:#f8fafc;">{{ entropy_info.theoretical_entropy }} bits</div>
                     </div>
                 </div>
                 {% endif %}
 
                 {% if hibp_info %}
-                <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #334155;">
+                <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--border-subtle); font-size:12px;">
                     {% if hibp_info.is_breached %}
-                        <span style="color: #f87171; font-weight: bold;">⚠ Compromised in Breaches:</span>
-                        <span style="color: #cbd5e1;"> Found <strong>{{ hibp_info.breach_count }}</strong> times in known data breaches (HaveIBeenPwned).</span>
+                        <span style="color:var(--rose-danger); font-weight:bold;">⚠ Known Compromised:</span>
+                        <span>Found <strong>{{ hibp_info.breach_count }}</strong> times in known public data breaches (HaveIBeenPwned).</span>
                     {% else %}
-                        <span style="color: #34d399; font-weight: bold;">✓ HIBP Clean:</span>
-                        <span style="color: #cbd5e1;"> No breach records identified via k-Anonymity query.</span>
+                        <span style="color:var(--emerald-success); font-weight:bold;">✓ HIBP Clean:</span>
+                        <span>No breach records found via SHA-1 k-Anonymity range lookup.</span>
                     {% endif %}
                 </div>
                 {% endif %}
             </div>
-        {% endif %}
+            {% endif %}
 
-        <div class="nav-links">
-            <a href="/login">Return to Login</a>
-            <a href="/dashboard-login">Admin Dashboard</a>
+            <div class="auth-footer">
+                <a href="/login">Return to Login</a>
+                <span>•</span>
+                <a href="/dashboard-login">Admin Portal</a>
+            </div>
         </div>
     </div>
+
+    <!-- Client-side Real-time Entropy Meter -->
+    <script>
+        const pwdInput = document.getElementById('password-input');
+        const meterFill = document.getElementById('meter-fill');
+        const liveFeedback = document.getElementById('live-feedback');
+
+        let timeout = null;
+        if (pwdInput) {
+            pwdInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if (!val) {
+                    meterFill.style.width = '0%';
+                    liveFeedback.textContent = '';
+                    return;
+                }
+
+                clearTimeout(timeout);
+                timeout = setTimeout(async () => {
+                    try {
+                        const res = await fetch('/api/password-analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: val })
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const score = data.zxcvbn.score;
+                            const colors = ['#f43f5e', '#f43f5e', '#f59e0b', '#38bdf8', '#10b981'];
+                            const pct = (score + 1) * 20;
+                            meterFill.style.width = pct + '%';
+                            meterFill.style.backgroundColor = colors[score] || '#f43f5e';
+                            liveFeedback.textContent = `Strength: ${data.zxcvbn.label} | Shannon Entropy: ${data.shannon_entropy.total_entropy} bits`;
+                        }
+                    } catch (err) {}
+                }, 300);
+            });
+        }
+    </script>
 </body>
 </html>

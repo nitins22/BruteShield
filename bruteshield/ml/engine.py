@@ -208,3 +208,101 @@ def log_honeypot_attempt(ip: str, username: str, password: str):
     )
     conn.commit()
     conn.close()
+
+
+def get_anomaly_score_for_ip(ip: str) -> dict:
+    """
+    Computes continuous anomaly score and feature breakdown for an IP.
+    Returns feature dictionary, raw score, anomaly verdict, and rule-based fallback status.
+    """
+    features = get_features_for_ip(ip)
+    feat_names = ["total_attempts", "failed_attempts", "distinct_usernames", "avg_gap", "min_gap", "failure_ratio"]
+    feat_dict = dict(zip(feat_names, features[0]))
+
+    model = get_ml_model()
+    raw_score = None
+    is_anomaly = False
+    decision = "NORMAL"
+
+    if features[0][0] > 0 and model is not None:
+        try:
+            raw_score = float(model.decision_function(features)[0])
+            pred = int(model.predict(features)[0])
+            is_anomaly = (pred == -1)
+            if is_anomaly:
+                decision = "ANOMALY_BLOCKED"
+            elif 0 <= raw_score < Config.CAPTCHA_SCORE_LIMIT:
+                decision = "SUSPICIOUS_CAPTCHA"
+            else:
+                decision = "NORMAL"
+        except Exception as e:
+            print(f"[ERROR] Anomaly scoring failed: {e}")
+
+    # Fallback to rule if model didn't run
+    if raw_score is None and features[0][0] > 0:
+        if is_suspicious_by_rule(ip):
+            is_anomaly = True
+            decision = "RULE_BLOCKED"
+
+    return {
+        "ip": ip,
+        "features": feat_dict,
+        "raw_score": round(raw_score, 4) if raw_score is not None else None,
+        "is_anomaly": is_anomaly,
+        "decision": decision
+    }
+
+
+def unblock_ip_manual(ip: str) -> bool:
+    """Removes an IP from the blocked list."""
+    conn = get_db()
+    conn.execute("DELETE FROM blocked_ips WHERE ip = ?", (ip,))
+    conn.commit()
+    conn.close()
+    return True
+
+
+def acknowledge_alert(alert_id: int, admin_user: str) -> bool:
+    """Marks a security alert as acknowledged by an operator."""
+    conn = get_db()
+    conn.execute(
+        "INSERT INTO alert_acknowledgements (alert_id, acknowledged_by, acknowledged_at) "
+        "VALUES (?, ?, ?) ON CONFLICT(alert_id) DO UPDATE SET acknowledged_by = excluded.acknowledged_by, acknowledged_at = excluded.acknowledged_at",
+        (alert_id, admin_user, time.time())
+    )
+    conn.commit()
+    conn.close()
+    return True
+
+
+def get_model_metadata() -> dict:
+    """Returns metadata and verified integrity for the loaded ML model."""
+    import hashlib
+    model = get_ml_model()
+    exists = os.path.exists(Config.MODEL_PATH)
+    sha256 = None
+    if exists:
+        try:
+            with open(Config.MODEL_PATH, "rb") as f:
+                sha256 = hashlib.sha256(f.read()).hexdigest().upper()
+        except Exception:
+            pass
+
+    return {
+        "loaded": model is not None,
+        "model_type": type(model).__name__ if model is not None else "None",
+        "model_path": Config.MODEL_PATH,
+        "sha256": sha256,
+        "feature_count": 6,
+        "features": [
+            "total_attempts",
+            "failed_attempts",
+            "distinct_usernames",
+            "avg_gap_seconds",
+            "min_gap_seconds",
+            "failure_ratio"
+        ],
+        "sliding_window_seconds": Config.SLIDING_WINDOW_SECONDS,
+        "captcha_score_limit": Config.CAPTCHA_SCORE_LIMIT
+    }
+

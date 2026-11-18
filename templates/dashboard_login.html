@@ -3,145 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BruteShield - Security Operations Center Login</title>
+    <title>BruteShield — SOC Admin Portal Authentication</title>
+    <link rel="stylesheet" href="/static/css/soc-theme.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+        .auth-container {
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 24px;
+            background: radial-gradient(circle at top, #111c33 0%, #070b14 70%);
         }
-        .box {
-            background: #1e293b;
-            padding: 35px 40px;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            width: 360px;
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 400px;
+            padding: 36px 32px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
         }
-        h2 { 
-            color: #f43f5e; 
-            margin-top: 0; 
+        .auth-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #f43f5e, #e11d48);
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .auth-header h2 {
+            font-size: 20px;
+            color: var(--rose-danger);
             margin-bottom: 6px;
-            font-size: 22px;
         }
-        .badge {
+        .auth-badge {
             display: inline-block;
-            font-size: 11px;
-            background: rgba(244, 63, 94, 0.15);
-            color: #f43f5e;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--rose-glow);
+            color: var(--rose-danger);
             border: 1px solid rgba(244, 63, 94, 0.3);
             padding: 2px 8px;
-            border-radius: 4px;
-            margin-bottom: 18px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.5px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-size: 11px;
             font-weight: 600;
-        }
-        input {
-            width: 100%;
-            padding: 10px 12px;
-            margin: 8px 0;
-            box-sizing: border-box;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #f8fafc;
-            font-size: 14px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #f43f5e;
-        }
-        button {
-            width: 100%;
-            padding: 11px;
-            background: #e11d48;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            margin-top: 10px;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #be123c;
-        }
-        button:disabled {
-            background: #475569;
-            cursor: not-allowed;
-            color: #94a3b8;
-        }
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid #ef4444;
-            color: #f87171;
-            line-height: 1.4;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
         }
         .captcha-box {
-            background: #0f172a;
-            border: 1px solid #eab308;
-            border-radius: 6px;
-            padding: 10px 12px;
-            margin: 12px 0;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid var(--amber-warning);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 16px;
         }
-        .captcha-box p {
-            margin: 0 0 6px 0;
-            color: #fde047;
-            font-size: 13px;
-        }
-        .nav-links {
-            margin-top: 18px;
+        .auth-footer {
+            margin-top: 24px;
             text-align: center;
-            font-size: 13px;
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: center;
+            gap: 16px;
         }
-        .nav-links a {
-            color: #94a3b8;
+        .auth-footer a {
+            color: var(--text-secondary);
             text-decoration: none;
-            margin: 0 8px;
+            transition: color 0.15s;
         }
-        .nav-links a:hover {
-            color: #f8fafc;
-            text-decoration: underline;
+        .auth-footer a:hover {
+            color: var(--cyan-primary);
         }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>SOC Admin Portal</h2>
-        <div class="badge">RESTRICTED ACCESS — PROTECTED BY ML ENGINE</div>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>SOC Admin Portal</h2>
+                <div class="auth-badge">RESTRICTED ACCESS — PROTECTED BY ML ENGINE</div>
+            </div>
 
-        <form method="POST">
-            <input type="text" name="username" placeholder="Admin username (dashadmin)" {% if blocked %}disabled{% endif %} required>
-            <input type="password" name="password" placeholder="Admin password (Dash@Admin1)" {% if blocked %}disabled{% endif %} required>
-            
-            {% if captcha_question %}
-                <div class="captcha-box">
-                    <p>Security Verification: <strong>{{ captcha_question }}</strong></p>
-                    <input type="text" name="captcha" placeholder="Answer" required>
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">Admin Username</label>
+                    <input 
+                        type="text" 
+                        class="soc-input" 
+                        style="width:100%;" 
+                        name="username" 
+                        placeholder="Admin username (dashadmin)" 
+                        {% if blocked %}disabled{% endif %} 
+                        required
+                    />
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">Admin Password</label>
+                    <input 
+                        type="password" 
+                        class="soc-input" 
+                        style="width:100%;" 
+                        name="password" 
+                        placeholder="Admin password (Dash@Admin1)" 
+                        {% if blocked %}disabled{% endif %} 
+                        required
+                    />
+                </div>
+
+                {% if captcha_question %}
+                <div class="captcha-box">
+                    <p style="color:var(--amber-warning); font-size:12px; margin-bottom:8px; font-weight:600;">
+                        Security Verification: <strong>{{ captcha_question }}</strong>
+                    </p>
+                    <input 
+                        type="text" 
+                        class="soc-input" 
+                        style="width:100%;" 
+                        name="captcha" 
+                        placeholder="Enter arithmetic solution" 
+                        required 
+                    />
+                </div>
+                {% endif %}
+
+                <button 
+                    type="submit" 
+                    class="btn btn-danger" 
+                    style="width:100%; padding:10px; margin-top:8px;" 
+                    {% if blocked %}disabled{% endif %}
+                >
+                    Authenticate to SOC Dashboard
+                </button>
+            </form>
+
+            {% if message %}
+            <div class="soc-notice soc-notice-danger" style="margin-top:18px; margin-bottom:0;">
+                {{ message }}
+            </div>
             {% endif %}
 
-            <button type="submit" {% if blocked %}disabled{% endif %}>Authenticate to Dashboard</button>
-        </form>
-
-        {% if message %}
-            <div class="message">{{ message }}</div>
-        {% endif %}
-
-        <div class="nav-links">
-            <a href="/login">Return to User Login</a>
-            <a href="/signup">Sign Up</a>
+            <div class="auth-footer">
+                <a href="/login">User Login Portal</a>
+                <span>•</span>
+                <a href="/signup">Create Account</a>
+            </div>
         </div>
     </div>
 </body>

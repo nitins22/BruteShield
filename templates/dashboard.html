@@ -3,276 +3,778 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BruteShield - Security Operations Center Dashboard</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0b1120;
-            color: #e2e8f0;
-            margin: 0;
-            padding: 30px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
-        h2 {
-            margin: 0;
-            color: #38bdf8;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .badge-live {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border: 1px solid #10b981;
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 9999px;
-            font-weight: bold;
-        }
-        .top-bar a {
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 14px;
-            padding: 8px 16px;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        .top-bar a:hover {
-            color: #f8fafc;
-            border-color: #38bdf8;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 35px;
-        }
-        .stat-card {
-            background: #111c30;
-            padding: 22px;
-            border-radius: 10px;
-            border: 1px solid #1e293b;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: #38bdf8;
-        }
-        .stat-card.alert-card::before {
-            background: #f43f5e;
-        }
-        .stat-card.warn-card::before {
-            background: #f59e0b;
-        }
-        .stat-card.user-card::before {
-            background: #10b981;
-        }
-        .stat-number {
-            font-size: 32px;
-            font-weight: 800;
-            color: #f8fafc;
-            letter-spacing: -0.5px;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .section-title {
-            color: #f8fafc;
-            font-size: 17px;
-            margin-top: 25px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #111c30;
-            border: 1px solid #1e293b;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        th, td {
-            padding: 12px 16px;
-            text-align: left;
-            border-bottom: 1px solid #1e293b;
-            font-size: 13px;
-        }
-        th {
-            background: #0d1527;
-            color: #94a3b8;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        .fail {
-            color: #f87171;
-            font-weight: 600;
-        }
-        .ok {
-            color: #34d399;
-            font-weight: 600;
-        }
-        .high {
-            color: #f43f5e;
-            font-weight: 700;
-            background: rgba(244, 63, 94, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        .medium {
-            color: #fbbf24;
-            font-weight: 700;
-            background: rgba(251, 191, 36, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        .empty-row {
-            text-align: center;
-            color: #64748b;
-            padding: 20px;
-        }
-    </style>
+    <title>BruteShield — Enterprise Security Operations Center</title>
+    <link rel="stylesheet" href="/static/css/soc-theme.css">
 </head>
 <body>
-    <div class="container">
-        <div class="top-bar">
-            <h2>BruteShield SOC Dashboard <span class="badge-live">LIVE TELEMETRY</span></h2>
-            <div>
-                <a href="/login">Protected Login</a>
-                <a href="/vault">Password Vault</a>
-                <a href="/logout">Logout</a>
+    <div class="soc-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="soc-sidebar">
+            <div class="soc-brand">
+                <div class="soc-brand-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <div class="soc-brand-text">
+                    <h1>BruteShield</h1>
+                    <span>SOC DEFENSE PLATFORM</span>
+                </div>
             </div>
-        </div>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ total_attempts }}</div>
-                <div class="stat-label">Total Login Attempts</div>
-            </div>
-            <div class="stat-card alert-card">
-                <div class="stat-number">{{ blocked_count }}</div>
-                <div class="stat-label">Currently Blocked IPs</div>
-            </div>
-            <div class="stat-card warn-card">
-                <div class="stat-number">{{ honeypot_count }}</div>
-                <div class="stat-label">Honeypot Decoy Hits</div>
-            </div>
-            <div class="stat-card user-card">
-                <div class="stat-number">{{ user_count }}</div>
-                <div class="stat-label">Registered Accounts</div>
-            </div>
-        </div>
+            <nav class="soc-nav">
+                <div class="soc-nav-heading">Operational Telemetry</div>
+                <a href="#overview" class="soc-nav-item active" data-section="overview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Security Overview</span>
+                </a>
 
-        <div class="section-title">🚨 Recent Security Alerts</div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 140px;">Timestamp</th>
-                    <th style="width: 100px;">Threat Level</th>
-                    <th>Security Incident Narrative</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if recent_alerts %}
-                    {% for a in recent_alerts %}
-                    <tr>
-                        <td>{{ a.time }}</td>
-                        <td>
-                            <span class="{{ 'high' if a.level == 'HIGH' else 'medium' }}">{{ a.level }}</span>
-                        </td>
-                        <td>{{ a.message }}</td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="3" class="empty-row">No security alerts recorded yet.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
+                <a href="#live" class="soc-nav-item" data-section="live">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <span>Live Monitoring</span>
+                </a>
 
-        <div class="section-title">🛡 Recent Authentication Attempts</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Client IP</th>
-                    <th>Username Attempted</th>
-                    <th>Authentication Outcome</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if recent_attempts %}
-                    {% for row in recent_attempts %}
-                    <tr>
-                        <td><code>{{ row.ip }}</code></td>
-                        <td>{{ row.username }}</td>
-                        <td class="{{ 'ok' if row.success else 'fail' }}">
-                            {{ '✓ Authorized' if row.success else '✗ Rejected' }}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="3" class="empty-row">No login telemetry recorded yet.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
+                <a href="#threats" class="soc-nav-item" data-section="threats">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>Threat Detection</span>
+                    <span class="soc-nav-badge" id="nav-alerts-badge" style="display:none;">0</span>
+                </a>
 
-        <div class="section-title">🍯 Honeypot Decoy Telemetry (/admin-login)</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Attacker IP</th>
-                    <th>Targeted Username</th>
-                    <th>Credential Length / Masked Preview</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if recent_honeypot %}
-                    {% for row in recent_honeypot %}
-                    <tr>
-                        <td><code>{{ row.ip }}</code></td>
-                        <td>{{ row.username_tried }}</td>
-                        <td><code>{{ row.password_tried }}</code></td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr><td colspan="3" class="empty-row">No honeypot interactions detected yet.</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
+                <div class="soc-nav-heading">Analytics & Research</div>
+                <a href="#analytics" class="soc-nav-item" data-section="analytics">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    <span>Security Analytics</span>
+                </a>
+
+                <a href="#honeypot" class="soc-nav-item" data-section="honeypot">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5z"/>
+                    </svg>
+                    <span>Honeypot Decoy</span>
+                </a>
+
+                <div class="soc-nav-heading">Platform Control</div>
+                <a href="#system" class="soc-nav-item" data-section="system">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <span>System Administration</span>
+                </a>
+            </nav>
+
+            <div class="soc-sidebar-footer">
+                <div class="soc-admin-pill">
+                    <div class="soc-admin-avatar">{{ admin_username[0]|upper }}</div>
+                    <div class="soc-admin-meta">
+                        <div class="soc-admin-name">{{ admin_username }}</div>
+                        <div class="soc-admin-role">SOC Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="soc-main">
+            <!-- Topbar Header -->
+            <header class="soc-topbar">
+                <div class="soc-topbar-left">
+                    <button class="soc-mobile-toggle" aria-label="Toggle Navigation">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <line x1="3" y1="18" x2="21" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="soc-page-title" id="soc-current-page-title">Security Operations Center — Overview</div>
+                    <div class="soc-status-badge status-healthy" id="soc-status-badge">
+                        <span class="soc-status-dot"></span> System Normal
+                    </div>
+                </div>
+
+                <div class="soc-topbar-right">
+                    <div class="soc-poll-selector">
+                        <span>Telemetry:</span>
+                        <select id="poll-interval-select">
+                            <option value="5000">5s (Live)</option>
+                            <option value="10000" selected>10s (Normal)</option>
+                            <option value="30000">30s (Eco)</option>
+                            <option value="0">Paused</option>
+                        </select>
+                    </div>
+
+                    <button class="soc-btn-refresh" id="btn-manual-refresh">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6"/>
+                            <path d="M1 20v-6h6"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Refresh
+                    </button>
+
+                    <div class="soc-topbar-nav">
+                        <a href="/login" class="soc-topbar-link">Protected Login</a>
+                        <a href="/vault" class="soc-topbar-link">Password Vault</a>
+                        <a href="/logout" class="soc-topbar-link" style="color:#f43f5e;">Logout</a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Body / Dynamic Sections -->
+            <div class="soc-content">
+
+                <!-- ========================================================= -->
+                <!-- SECTION A: SECURITY OVERVIEW -->
+                <!-- ========================================================= -->
+                <section class="soc-section active" id="section-overview">
+                    <div class="soc-section-header">
+                        <h2>Operational Security Overview</h2>
+                        <p>Real-time telemetry, authentication volume, and defensive countermeasures posture.</p>
+                    </div>
+
+                    <!-- KPI Cards Grid -->
+                    <div class="soc-kpi-grid">
+                        <div class="soc-kpi-card">
+                            <div class="soc-kpi-label">Total Login Attempts</div>
+                            <div class="soc-kpi-val" id="kpi-total-attempts">{{ total_attempts }}</div>
+                            <div class="soc-kpi-sub">Database telemetry records</div>
+                        </div>
+
+                        <div class="soc-kpi-card kpi-danger">
+                            <div class="soc-kpi-label">Failed Authentications</div>
+                            <div class="soc-kpi-val" id="kpi-failed-attempts">0</div>
+                            <div class="soc-kpi-sub">Incorrect password attempts</div>
+                        </div>
+
+                        <div class="soc-kpi-card kpi-warning">
+                            <div class="soc-kpi-label">Failure Ratio</div>
+                            <div class="soc-kpi-val" id="kpi-failure-rate">0.0%</div>
+                            <div class="soc-kpi-sub">Failure / total attempts</div>
+                        </div>
+
+                        <div class="soc-kpi-card kpi-danger">
+                            <div class="soc-kpi-label">Active Blocked Sources</div>
+                            <div class="soc-kpi-val" id="kpi-active-blocks">{{ blocked_count }}</div>
+                            <div class="soc-kpi-sub">IP addresses in quarantine</div>
+                        </div>
+
+                        <div class="soc-kpi-card kpi-warning">
+                            <div class="soc-kpi-label">Honeypot Decoy Hits</div>
+                            <div class="soc-kpi-val" id="kpi-honeypot-hits">{{ honeypot_count }}</div>
+                            <div class="soc-kpi-sub">Unauthorized /admin-login hits</div>
+                        </div>
+
+                        <div class="soc-kpi-card kpi-indigo">
+                            <div class="soc-kpi-label">Pending Alerts</div>
+                            <div class="soc-kpi-val" id="kpi-active-alerts">0</div>
+                            <div class="soc-kpi-sub">Unreviewed security incidents</div>
+                        </div>
+                    </div>
+
+                    <!-- 2-Column: Activity Timeline Chart + Auth Ratio Donut -->
+                    <div class="soc-grid-2col">
+                        <div class="soc-card">
+                            <div class="soc-card-header">
+                                <div>
+                                    <div class="soc-card-title">Authentication Activity Timeline</div>
+                                    <div class="soc-card-subtitle">Real-time volume distribution of successful vs failed logins</div>
+                                </div>
+                            </div>
+                            <div class="soc-chart-container" style="height:250px;">
+                                <canvas id="canvas-overview-trend" class="soc-chart-canvas"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="soc-card">
+                            <div class="soc-card-header">
+                                <div>
+                                    <div class="soc-card-title">Authentication Ratio</div>
+                                    <div class="soc-card-subtitle">Outcome proportions</div>
+                                </div>
+                            </div>
+                            <div class="soc-chart-container" style="height:250px;">
+                                <canvas id="canvas-overview-donut" class="soc-chart-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Table -->
+                    <div class="soc-card">
+                        <div class="soc-card-header">
+                            <div>
+                                <div class="soc-card-title">Recent Security Activity Stream</div>
+                                <div class="soc-card-subtitle">Latest chronological authentication attempts, honeypot traps, and threat events</div>
+                            </div>
+                        </div>
+                        <div class="soc-table-wrapper">
+                            <table class="soc-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:140px;">Event Type</th>
+                                        <th style="width:160px;">Source IP</th>
+                                        <th>Details / Context</th>
+                                        <th style="width:120px;">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-overview-recent">
+                                    {% if recent_attempts %}
+                                        {% for r in recent_attempts %}
+                                        <tr>
+                                            <td><span class="badge badge-info">AUTHENTICATION</span></td>
+                                            <td><span class="soc-code-pill cursor-pointer" onclick="window.investigateIp('{{ r.ip }}')">{{ r.ip }}</span></td>
+                                            <td>User '{{ r.username }}' - {{ 'Authorized' if r.success else 'Failed' }}</td>
+                                            <td><span class="soc-code-pill">Just now</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr><td colspan="4" class="soc-empty-state"><p>No operational events recorded yet.</p></td></tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ========================================================= -->
+                <!-- SECTION B: LIVE MONITORING -->
+                <!-- ========================================================= -->
+                <section class="soc-section" id="section-live">
+                    <div class="soc-section-header">
+                        <h2>Live Telemetry Stream</h2>
+                        <p>Real-time authentication requests across all application interfaces.</p>
+                    </div>
+
+                    <div class="soc-card">
+                        <!-- Filter & Search Bar -->
+                        <div class="soc-filter-bar">
+                            <div class="soc-filter-group">
+                                <input type="text" class="soc-input" id="search-live-feed" placeholder="Filter by IP or username..." style="width:260px;">
+                                <select class="soc-select" id="filter-live-status">
+                                    <option value="all">All Outcomes</option>
+                                    <option value="failed">Failed Only</option>
+                                    <option value="success">Authorized Only</option>
+                                    <option value="blocked">Blocked Sources Only</option>
+                                </select>
+                            </div>
+                            <div style="font-size:12px; color:var(--text-muted);">
+                                Polling live database every 10 seconds
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <div class="soc-table-wrapper">
+                            <table class="soc-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Source IP</th>
+                                        <th>Targeted User</th>
+                                        <th>Outcome</th>
+                                        <th>Quarantine Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-live-feed">
+                                    <tr><td colspan="6" class="soc-empty-state"><p>Loading telemetry stream...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="soc-pagination">
+                            <div id="live-feed-page-info">Page 1 of 1</div>
+                            <div class="soc-pagination-actions">
+                                <button class="btn btn-secondary btn-sm" id="live-feed-prev" disabled>Previous</button>
+                                <button class="btn btn-secondary btn-sm" id="live-feed-next" disabled>Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ========================================================= -->
+                <!-- SECTION C: THREAT DETECTION -->
+                <!-- ========================================================= -->
+                <section class="soc-section" id="section-threats">
+                    <div class="soc-section-header">
+                        <h2>Threat Detection & Active Countermeasures</h2>
+                        <p>Anomaly detection logs, actively quarantined IP addresses, and security incident alerts.</p>
+                    </div>
+
+                    <!-- Active Blocked Quarantine Table -->
+                    <div class="soc-card">
+                        <div class="soc-card-header">
+                            <div>
+                                <div class="soc-card-title">Currently Quarantined Sources (Active IP Blocks)</div>
+                                <div class="soc-card-subtitle">Automated adaptive cooldown (1m → 5m → 15m → 1h) triggered by ML anomaly engine or honeypot</div>
+                            </div>
+                        </div>
+                        <div class="soc-table-wrapper">
+                            <table class="soc-table">
+                                <thead>
+                                    <tr>
+                                        <th>Quarantined IP</th>
+                                        <th>Remaining Cooldown</th>
+                                        <th>Offense Count</th>
+                                        <th>ML Verdict & Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-active-blocks">
+                                    <tr><td colspan="5" class="soc-empty-state"><p>No IP addresses currently under quarantine.</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Security Alerts Table -->
+                    <div class="soc-card">
+                        <div class="soc-card-header">
+                            <div>
+                                <div class="soc-card-title">Security Incident Alerts & Audit Trail</div>
+                                <div class="soc-card-subtitle">Detailed security narratives with operator acknowledgement tracking</div>
+                            </div>
+                        </div>
+                        <div class="soc-table-wrapper">
+                            <table class="soc-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Severity</th>
+                                        <th>Incident Narrative</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-alerts-full">
+                                    {% if recent_alerts %}
+                                        {% for a in recent_alerts %}
+                                        <tr>
+                                            <td><span class="soc-code-pill">{{ a.time }}</span></td>
+                                            <td><span class="badge {{ 'badge-danger' if a.level == 'HIGH' else 'badge-warning' }}">{{ a.level }}</span></td>
+                                            <td>{{ a.message }}</td>
+                                            <td><span class="badge badge-warning">Pending Review</span></td>
+                                            <td><button class="btn btn-primary btn-sm" onclick="window.acknowledgeAlert({{ a.id }})">Acknowledge</button></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr><td colspan="5" class="soc-empty-state"><p>Zero security alerts recorded.</p></td></tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ========================================================= -->
+                <!-- SECTION D: SECURITY ANALYTICS & BENCHMARKS -->
+                <!-- ========================================================= -->
+                <section class="soc-section" id="section-analytics">
+                    <div class="soc-section-header">
+                        <h2>Security Analytics & Empirical Research Benchmarks</h2>
+                        <p>Real operational trend analytics alongside verified scientific benchmarks (strictly partitioned).</p>
+                    </div>
+
+                    <div class="soc-card">
+                        <div class="soc-tabs">
+                            <button class="soc-tab-btn active" data-tab="tab-operational-analytics">Live Operational Trends</button>
+                            <button class="soc-tab-btn" data-tab="tab-synthetic-benchmark">Synthetic Benchmark (Phase 1)</button>
+                            <button class="soc-tab-btn" data-tab="tab-lanl-benchmark">LANL Enterprise Benchmark (Phase 2B)</button>
+                        </div>
+
+                        <!-- TAB 1: OPERATIONAL ANALYTICS -->
+                        <div class="soc-tab-pane" id="tab-operational-analytics" style="display:block;">
+                            <div class="soc-card-header">
+                                <div>
+                                    <div class="soc-card-title">Daily Failed Login Attack Trends</div>
+                                    <div class="soc-card-subtitle">Aggregated daily failure frequency from live telemetry</div>
+                                </div>
+                            </div>
+                            <div class="soc-chart-container" style="height:220px; margin-bottom:24px;">
+                                <canvas id="canvas-daily-trend" class="soc-chart-canvas"></canvas>
+                            </div>
+
+                            <div class="soc-grid-equal">
+                                <div>
+                                    <div class="soc-card-title" style="margin-bottom:12px;">Top Targeted User Accounts</div>
+                                    <div class="soc-table-wrapper">
+                                        <table class="soc-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Account Username</th>
+                                                    <th>Attempts</th>
+                                                    <th>Failures</th>
+                                                    <th>Failure %</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-top-targets">
+                                                <tr><td colspan="4" class="soc-empty-state"><p>Loading target analytics...</p></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="soc-card-title" style="margin-bottom:12px;">Top Threat Source IPs</div>
+                                    <div class="soc-table-wrapper">
+                                        <table class="soc-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Source IP</th>
+                                                    <th>Attempts</th>
+                                                    <th>Failures</th>
+                                                    <th>Users Hit</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody-top-ips">
+                                                <tr><td colspan="5" class="soc-empty-state"><p>Loading IP analytics...</p></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: SYNTHETIC BENCHMARK -->
+                        <div class="soc-tab-pane" id="tab-synthetic-benchmark" style="display:none;">
+                            <div class="soc-notice soc-notice-info">
+                                <div>
+                                    <strong>Phase 1 Evaluation Benchmark:</strong>
+                                    Conducted on a controlled simulated test suite of <strong>300 normal users</strong> and <strong>190 simulated multi-vector attackers</strong>.
+                                    Compares BruteShield ML behavioral detection against traditional fixed 5-failure threshold rules.
+                                </div>
+                            </div>
+
+                            <div class="soc-table-wrapper" style="margin-bottom:20px;">
+                                <table class="soc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Evaluation Metric</th>
+                                            <th>BruteShield ML Engine</th>
+                                            <th>Traditional 5-Attempt Rule</th>
+                                            <th>Relative Advantage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-synth-bench">
+                                        <tr><td colspan="4" class="soc-empty-state"><p>Loading benchmark data...</p></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="soc-grid-equal">
+                                <div class="soc-card" style="background:#0f172a; margin-bottom:0;">
+                                    <div class="soc-card-title" style="margin-bottom:8px;">Attack Vector Detection Rates</div>
+                                    <ul style="font-size:13px; line-height:1.8; color:var(--text-secondary); padding-left:18px;">
+                                        <li><strong>Fast Brute-Force:</strong> ML 100% | Rule 100%</li>
+                                        <li><strong>Credential Stuffing (multi-user):</strong> ML 100% | Rule 100%</li>
+                                        <li><strong>Low-and-Slow (12-60s gaps):</strong> <span style="color:#10b981; font-weight:bold;">ML 100%</span> | <span style="color:#f43f5e;">Rule 0% (Evaded!)</span></li>
+                                        <li><strong>Stealthy Sub-Threshold (3-4 attempts):</strong> <span style="color:#10b981; font-weight:bold;">ML 77%</span> | <span style="color:#f43f5e;">Rule 0% (Evaded!)</span></li>
+                                    </ul>
+                                </div>
+
+                                <div class="soc-card" style="background:#0f172a; margin-bottom:0;">
+                                    <div class="soc-card-title" style="margin-bottom:8px;">Normal User False Positives</div>
+                                    <ul style="font-size:13px; line-height:1.8; color:var(--text-secondary); padding-left:18px;">
+                                        <li><strong>Direct Clean Logins:</strong> ML 0.0% false positives</li>
+                                        <li><strong>1-3 Typo Corrections:</strong> ML 0.0% false positives</li>
+                                        <li><strong>Double-Click Submissions:</strong> ML 0.0% false positives</li>
+                                        <li><strong>Forgotten Password (3-8 bad tries):</strong> ML 25.0% | Rule 2.0%</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: LANL REAL-WORLD BENCHMARK -->
+                        <div class="soc-tab-pane" id="tab-lanl-benchmark" style="display:none;">
+                            <div class="soc-notice soc-notice-warning">
+                                <div>
+                                    <strong>Scientific Integrity Disclosure:</strong>
+                                    Evaluation conducted strictly on the approved <strong>Days 0 to 2.31 Empirical Slice</strong> of the Los Alamos National Laboratory (LANL) <em>Comprehensive Multi-Source Cyber-Security Events</em> (<code>cyber1</code>) dataset.
+                                    Contains <strong>21,255,459 retained authentication records</strong>. 10 exact-second red-team matches in slice.
+                                    This measures enterprise Active Directory domain telemetry (Kerberos/NTLM), not interactive web logins.
+                                </div>
+                            </div>
+
+                            <div class="soc-card-title" style="margin-bottom:12px;">Experiment A: Temporal Generalization (Trained on Train, Evaluated on Chronologically Separate Test Partition)</div>
+                            <div class="soc-table-wrapper" style="margin-bottom:24px;">
+                                <table class="soc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Model Architecture</th>
+                                            <th>TP</th>
+                                            <th>FP</th>
+                                            <th>FN</th>
+                                            <th>TN</th>
+                                            <th>Precision</th>
+                                            <th>Recall</th>
+                                            <th>FPR</th>
+                                            <th>ROC-AUC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-lanl-expA">
+                                        <tr><td colspan="9" class="soc-empty-state"><p>Loading LANL Exp A data...</p></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="soc-card-title" style="margin-bottom:12px;">Experiment B: Unseen Identity Generalization (Evaluated on Unseen Source Workstations)</div>
+                            <div class="soc-table-wrapper" style="margin-bottom:20px;">
+                                <table class="soc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Model Architecture</th>
+                                            <th>FP</th>
+                                            <th>TN</th>
+                                            <th>FPR</th>
+                                            <th>ROC-AUC</th>
+                                            <th>Research Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-lanl-expB">
+                                        <tr><td colspan="6" class="soc-empty-state"><p>Loading LANL Exp B data...</p></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="soc-card" style="background:#0f172a; margin-bottom:0;">
+                                <div class="soc-card-title" style="margin-bottom:8px;">Custom Fail2ban Baseline Comparison on LANL Telemetry</div>
+                                <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">
+                                    A simulated Fail2ban state machine (5 failures / 60s window) produced <strong>8,921 background blocks</strong> on noisy benign Active Directory Kerberos ticket renewals, but achieved <strong>0% detection of red-team attack episodes</strong>.
+                                    In contrast, BruteShield's multi-feature sliding window detected <strong>100% of proxy low-and-slow episodes</strong> by analyzing inter-arrival gaps and failure ratios.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ========================================================= -->
+                <!-- SECTION E: HONEYPOT MONITORING -->
+                <!-- ========================================================= -->
+                <section class="soc-section" id="section-honeypot">
+                    <div class="soc-section-header">
+                        <h2>Honeypot Decoy Telemetry (/admin-login)</h2>
+                        <p>Trap monitoring for unauthorized intrusion attempts targeting fake administrative login endpoints.</p>
+                    </div>
+
+                    <div class="soc-card">
+                        <div class="soc-notice soc-notice-info">
+                            <div>
+                                <strong>Zero Credential Leakage Guarantee:</strong>
+                                Raw passwords submitted by attackers are <em>never</em> stored in plain-text. They are immediately masked (e.g. <code>ad***in (5 chars)</code>) preserving length and structural entropy while protecting data integrity.
+                                Any IP submitting to the decoy is immediately blacklisted application-wide.
+                            </div>
+                        </div>
+
+                        <div class="soc-filter-bar">
+                            <input type="text" class="soc-input" id="search-honeypot" placeholder="Search honeypot logs by IP or username..." style="width:300px;">
+                            <div style="font-size:12px; color:var(--text-muted);">
+                                Decoy Endpoint: <code>/admin-login</code>
+                            </div>
+                        </div>
+
+                        <div class="soc-table-wrapper">
+                            <table class="soc-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Attacker IP</th>
+                                        <th>Targeted Username</th>
+                                        <th>Credential Preview (Masked)</th>
+                                        <th>Quarantine Action</th>
+                                        <th>Investigation</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-honeypot">
+                                    <tr><td colspan="6" class="soc-empty-state"><p>Loading honeypot interaction records...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="soc-pagination">
+                            <div id="honeypot-page-info">Page 1 of 1</div>
+                            <div class="soc-pagination-actions">
+                                <button class="btn btn-secondary btn-sm" id="honeypot-prev" disabled>Previous</button>
+                                <button class="btn btn-secondary btn-sm" id="honeypot-next" disabled>Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ========================================================= -->
+                <!-- SECTION F: SYSTEM ADMINISTRATION -->
+                <!-- ========================================================= -->
+                <section class="soc-section" id="section-system">
+                    <div class="soc-section-header">
+                        <h2>System Administration & Security Policies</h2>
+                        <p>Database engine health, user accounts, ML model integrity, and active security thresholds.</p>
+                    </div>
+
+                    <div class="soc-grid-equal">
+                        <!-- Security Policies Card -->
+                        <div class="soc-card">
+                            <div class="soc-card-title" style="margin-bottom:14px;">Active Defensive Policies & Thresholds</div>
+                            <table class="soc-table">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Max Failed Attempts</strong></td>
+                                        <td id="sys-policy-threshold">5 failures in 60s</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Adaptive Cooldown Ladder</strong></td>
+                                        <td id="sys-policy-durations">60s → 300s → 900s → 3600s</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>CAPTCHA Trigger Score</strong></td>
+                                        <td id="sys-policy-captcha">Decision score &lt; 0.06</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Sliding Window Duration</strong></td>
+                                        <td id="sys-policy-window">900 seconds (15 minutes)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ML Model Status Card -->
+                        <div class="soc-card">
+                            <div class="soc-card-title" style="margin-bottom:14px;">Machine Learning Engine Status</div>
+                            <table class="soc-table">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Engine Status</strong></td>
+                                        <td id="sys-model-status"><span class="badge badge-success">Active & Operational</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Algorithm Type</strong></td>
+                                        <td id="sys-model-type">IsolationForest (Unsupervised)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Model Verification SHA-256</strong></td>
+                                        <td><code class="soc-code-pill" id="sys-model-sha256" style="font-size:10px;">{{ model_meta.sha256 or 'N/A' }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Feature Vector</strong></td>
+                                        <td id="sys-model-features">6 dimensions</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="soc-grid-equal">
+                        <!-- Database Health Card -->
+                        <div class="soc-card">
+                            <div class="soc-card-title" style="margin-bottom:14px;">Database Health & Storage</div>
+                            <table class="soc-table">
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Database Path</strong></td>
+                                        <td id="sys-db-path" style="font-size:11px;">logs/bruteshield.db</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Storage Size</strong></td>
+                                        <td id="sys-db-size">Loading...</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Journaling Mode</strong></td>
+                                        <td id="sys-db-journal"><span class="badge badge-success">WAL (Write-Ahead Logging)</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Table Telemetry Rows</strong></td>
+                                        <td id="sys-db-rows" style="font-size:12px;">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Registered Users Card -->
+                        <div class="soc-card">
+                            <div class="soc-card-title" style="margin-bottom:14px;">Registered User Accounts</div>
+                            <div class="soc-table-wrapper" style="max-height:200px;">
+                                <table class="soc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-system-users">
+                                        <tr><td colspan="4" class="soc-empty-state"><p>Loading users...</p></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
     </div>
+
+    <!-- MODAL: IP Deep Dive Investigation -->
+    <div class="soc-modal-backdrop" id="modal-investigate">
+        <div class="soc-modal">
+            <div class="soc-modal-header">
+                <div class="soc-modal-title">
+                    Source Investigation: <span id="modal-investigate-ip" class="soc-code-pill">127.0.0.1</span>
+                </div>
+                <button class="soc-modal-close" onclick="window.closeModals()">&times;</button>
+            </div>
+            <div class="soc-modal-body" id="modal-investigate-content">
+                <div class="soc-empty-state"><p>Loading investigation data...</p></div>
+            </div>
+            <div class="soc-modal-footer">
+                <button class="btn btn-secondary" onclick="window.closeModals()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Unblock IP Confirmation -->
+    <div class="soc-modal-backdrop" id="modal-unblock">
+        <div class="soc-modal" style="max-width:440px;">
+            <div class="soc-modal-header">
+                <div class="soc-modal-title">Confirm Manual Unblock</div>
+                <button class="soc-modal-close" onclick="window.closeModals()">&times;</button>
+            </div>
+            <div class="soc-modal-body">
+                <p style="font-size:14px; margin-bottom:14px;">
+                    Are you sure you want to lift the defensive quarantine for IP <strong id="unblock-target-ip" class="soc-code-pill"></strong>?
+                </p>
+                <div class="soc-notice soc-notice-warning" style="margin-bottom:0;">
+                    An administrative audit alert will be recorded into the security log.
+                </div>
+            </div>
+            <div class="soc-modal-footer">
+                <button class="btn btn-secondary" onclick="window.closeModals()">Cancel</button>
+                <button class="btn btn-danger" id="unblock-confirm-btn">Confirm Unblock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/soc-charts.js"></script>
+    <script src="/static/js/dashboard.js"></script>
 </body>
 </html>

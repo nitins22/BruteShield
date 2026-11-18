@@ -3,237 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BruteShield - Secure Password Vault</title>
+    <title>BruteShield — Encrypted Credential Vault</title>
+    <link rel="stylesheet" href="/static/css/soc-theme.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            margin: 0;
-            padding: 30px;
-        }
-        .container {
-            max-width: 900px;
+        .vault-container {
+            max-width: 960px;
             margin: 0 auto;
+            padding: 30px 20px;
         }
-        .header {
+        .vault-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #1e293b;
-            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 18px;
             margin-bottom: 24px;
         }
-        h2 {
-            margin: 0;
-            color: #38bdf8;
-            font-size: 24px;
+        .vault-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .user-nav a {
-            color: #94a3b8;
-            text-decoration: none;
-            margin-left: 15px;
-            font-size: 14px;
-        }
-        .user-nav a:hover {
-            color: #38bdf8;
-        }
-        .badge-enc {
-            background: #0284c7;
-            color: white;
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            margin-left: 10px;
-        }
-        .card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        h3 {
-            margin-top: 0;
-            color: #f8fafc;
-            font-size: 18px;
-            margin-bottom: 16px;
+        .vault-title h2 {
+            font-size: 22px;
+            color: var(--cyan-primary);
         }
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group.full {
+        .form-grid .full {
             grid-column: span 2;
         }
-        label {
-            display: block;
-            font-size: 12px;
-            color: #94a3b8;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #f8fafc;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #38bdf8;
-        }
-        button.btn-primary {
-            background: #0284c7;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        button.btn-primary:hover {
-            background: #0369a1;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 12px 14px;
-            text-align: left;
-            border-bottom: 1px solid #334155;
-            font-size: 13px;
-        }
-        th {
-            background: #0f172a;
-            color: #94a3b8;
-            font-weight: 600;
-        }
         .secret-field {
-            font-family: monospace;
-            background: #0f172a;
+            font-family: var(--font-mono);
+            background: #0b1120;
             padding: 4px 8px;
-            border-radius: 4px;
-            display: inline-block;
-        }
-        .btn-decrypt {
-            background: #334155;
-            color: #38bdf8;
-            border: 1px solid #475569;
-            padding: 4px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .btn-decrypt:hover {
-            background: #475569;
-        }
-        .btn-delete {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .btn-delete:hover {
-            background: #b91c1c;
-        }
-        .empty-state {
-            text-align: center;
-            color: #64748b;
-            padding: 30px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-subtle);
+            color: var(--cyan-primary);
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h2>BruteShield Password Vault <span class="badge-enc">AES-256-GCM ENCRYPTED</span></h2>
+    <div class="vault-container">
+        <div class="vault-header">
+            <div class="vault-title">
+                <h2>BruteShield Password Vault</h2>
+                <span class="badge badge-info">AES-256-GCM ENCRYPTED</span>
             </div>
-            <div class="user-nav">
+            <div style="display:flex; align-items:center; gap:16px; font-size:13px;">
                 <span>Logged in as <strong>{{ username }}</strong></span>
-                <a href="/login">Protected Login</a>
-                <a href="/logout">Logout</a>
+                <a href="/login" class="soc-topbar-link">Protected Login</a>
+                <a href="/logout" class="soc-topbar-link" style="color:var(--rose-danger);">Logout</a>
             </div>
         </div>
 
-        <div class="card">
-            <h3>Add Encrypted Credential</h3>
+        <!-- Add Credential Card -->
+        <div class="soc-card">
+            <div class="soc-card-title" style="margin-bottom:16px;">Add Encrypted Credential</div>
             <form method="POST">
                 <div class="form-grid">
-                    <div class="form-group">
-                        <label>Service / Application Name</label>
-                        <input type="text" name="service_name" placeholder="e.g. GitHub, AWS, University Portal" required>
+                    <div>
+                        <label class="form-label" style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; display:block;">Service / Application Name</label>
+                        <input type="text" class="soc-input" style="width:100%;" name="service_name" placeholder="e.g. AWS Production, GitHub, Database" required>
                     </div>
-                    <div class="form-group">
-                        <label>Username / Email</label>
-                        <input type="text" name="username" placeholder="account_user" required>
+                    <div>
+                        <label class="form-label" style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; display:block;">Account Username / Email</label>
+                        <input type="text" class="soc-input" style="width:100%;" name="username" placeholder="account_user" required>
                     </div>
-                    <div class="form-group full">
-                        <label>Password to Encrypt</label>
-                        <input type="password" name="password" placeholder="Enter sensitive password" required>
+                    <div class="full">
+                        <label class="form-label" style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; display:block;">Password to Encrypt</label>
+                        <input type="password" class="soc-input" style="width:100%;" name="password" placeholder="Enter sensitive secret to protect" required>
                     </div>
-                    <div class="form-group full">
-                        <label>Notes / Context (Optional)</label>
-                        <textarea name="notes" rows="2" placeholder="Recovery codes, server hints, etc."></textarea>
+                    <div class="full">
+                        <label class="form-label" style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; display:block;">Notes / Operational Context (Optional)</label>
+                        <textarea class="soc-input" style="width:100%; resize:vertical;" name="notes" rows="2" placeholder="Recovery codes, server hints, rotation schedule"></textarea>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">Encrypt & Save to Vault</button>
+                <button type="submit" class="btn btn-primary" style="margin-top:16px;">
+                    Encrypt & Save to Vault
+                </button>
             </form>
         </div>
 
-        <div class="card">
-            <h3>Stored Credentials ({{ items|length }})</h3>
+        <!-- Stored Items Table -->
+        <div class="soc-card">
+            <div class="soc-card-header">
+                <div>
+                    <div class="soc-card-title">Stored Credentials ({{ items|length }})</div>
+                    <div class="soc-card-subtitle">Authenticated AES-GCM ciphertext decrypted on demand in memory</div>
+                </div>
+                <div>
+                    <input type="text" class="soc-input" id="search-vault" placeholder="Filter credentials..." style="width:200px;">
+                </div>
+            </div>
+
             {% if items %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Service</th>
-                        <th>Username</th>
-                        <th>Encrypted Secret</th>
-                        <th>Notes</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                    <tr>
-                        <td><strong>{{ item.service_name }}</strong></td>
-                        <td>{{ item.username }}</td>
-                        <td>
-                            <span class="secret-field" id="secret-{{ item.id }}">••••••••••••</span>
-                            <button type="button" class="btn-decrypt" onclick="revealSecret({{ item.id }})">Reveal</button>
-                        </td>
-                        <td><small style="color:#94a3b8;">{{ item.notes or 'None' }}</small></td>
-                        <td>
-                            <form method="POST" action="/vault/delete/{{ item.id }}" style="display:inline;" onsubmit="return confirm('Delete this credential?');">
-                                <button type="submit" class="btn-delete">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="soc-table-wrapper">
+                <table class="soc-table" id="table-vault">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Username</th>
+                            <th>Encrypted Secret</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td><strong>{{ item.service_name }}</strong></td>
+                            <td>{{ item.username }}</td>
+                            <td>
+                                <span class="secret-field" id="secret-{{ item.id }}">••••••••••••</span>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="revealSecret({{ item.id }})">Reveal</button>
+                            </td>
+                            <td><small style="color:var(--text-muted);">{{ item.notes or 'None' }}</small></td>
+                            <td>
+                                <form method="POST" action="/vault/delete/{{ item.id }}" style="display:inline;" onsubmit="return confirm('Delete this credential permanently?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% else %}
-            <div class="empty-state">No credentials saved yet. Add your first encrypted secret above.</div>
+            <div class="soc-empty-state">
+                <h4>No credentials saved yet</h4>
+                <p>Add your first encrypted secret above to store it securely with AES-256-GCM.</p>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -258,6 +162,18 @@
             } catch (err) {
                 alert('Request failed: ' + err);
             }
+        }
+
+        const searchVault = document.getElementById('search-vault');
+        if (searchVault) {
+            searchVault.addEventListener('input', (e) => {
+                const val = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#table-vault tbody tr');
+                rows.forEach(r => {
+                    const txt = r.textContent.toLowerCase();
+                    r.style.display = txt.includes(val) ? '' : 'none';
+                });
+            });
         }
     </script>
 </body>

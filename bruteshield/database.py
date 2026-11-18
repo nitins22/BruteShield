@@ -82,6 +82,16 @@ def init_db(db_path=None):
         )
     """)
 
+    # 6b. Alert acknowledgements (SOC status management)
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS alert_acknowledgements (
+            alert_id INTEGER PRIMARY KEY,
+            acknowledged_by TEXT NOT NULL,
+            acknowledged_at REAL NOT NULL,
+            FOREIGN KEY (alert_id) REFERENCES alerts(id) ON DELETE CASCADE
+        )
+    """)
+
     # 7. Secure Password Vault for registered users
     cur.execute("""
         CREATE TABLE IF NOT EXISTS vault_items (
