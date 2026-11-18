@@ -4,3 +4,9 @@ logs/
 *.pkl
 backup_pre_phase1/
 data/
+.env
+.env.local
+.env.production
+*.db-journal
+*.db-wal
+*.db-shm

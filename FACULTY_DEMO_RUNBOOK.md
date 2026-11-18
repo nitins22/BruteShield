@@ -1,215 +1,373 @@
-# BruteShield — Faculty Demonstration Runbook & Presentation Guide
+# BruteShield — Faculty Demonstration Runbook
 
-**Project Title:** BruteShield — Adaptive Cybersecurity Defense Engine & Live SOC Monitoring Platform  
-**Target Audience:** Project Evaluation Committee, External Examiners, Faculty Guides  
-**Estimated Presentation Duration:** 10–12 Minutes  
-
----
-
-## 1. Executive Summary & Project Positioning
-
-BruteShield is a defense-in-depth cybersecurity platform that protects web applications against automated credential stuffing, distributed brute force, and credential harvesting. It combines:
-1. **Behavioral Machine Learning Anomaly Detection:** Real-time sliding-window feature extraction that classifies attack velocity and patterns rather than relying solely on static attempt counters.
-2. **Adaptive Escalation Ladder:** Multi-tiered defense (Normal -> Math CAPTCHA friction challenge -> Cooldown blocking ladder: 60s, 300s, 900s, 3600s).
-3. **Proactive Decoy Honeypot (`/admin-login`):** Traps automated bot scanners and attacker discovery scripts while isolating legitimate administrative portals.
-4. **Client-Side & Storage Privacy:** Zero-knowledge AES-256-GCM credential vault, real-time Shannon entropy calculation, and Have I Been Pwned (HIBP) k-Anonymity breach verification.
-5. **Real-Time SOC Monitoring Dashboard:** Enterprise dark SOC telemetry with strict tripartite data partitioning (Operational Logs, Synthetic Benchmarks, and Los Alamos National Laboratory Cyber Dataset).
+**Project:** BruteShield — Adaptive Cybersecurity Defense Engine & SOC Monitoring Platform  
+**Duration:** 10–12 minutes  
+**Audience:** Project Evaluation Committee, External Examiners, Faculty Guide  
 
 ---
 
-## 2. Demonstration Flow & Timing Breakdown
+## Pre-Flight Checklist
 
-```
- ┌────────────────────────────────────────────────────────────────────────┐
- │                      TOTAL RUNTIME: 10-12 MINUTES                      │
- ├──────────────┬──────────────────────────────────────────┬──────────────┤
- │ Time         │ Demonstration Module                     │ Tool / URL   │
- ├──────────────┼──────────────────────────────────────────┼──────────────┤
- │ 00:00 - 01:30│ Phase 0: Test Suite & Security Audit Verif│ Terminal     │
- │ 01:30 - 03:30│ Phase 1: Registration, Entropy & HIBP API│ /signup      │
- │ 03:30 - 05:30│ Phase 2: Zero-Knowledge AES-GCM Vault    │ /vault       │
- │ 05:30 - 08:30│ Phase 3: Live Brute Force & ML Block     │ Simulation/SOC│
- │ 08:30 - 10:00│ Phase 4: Honeypot Decoy Trap Analysis    │ /admin-login │
- │ 10:00 - 12:00│ Phase 5: Scientific Benchmarks & Q&A     │ /dashboard   │
- └──────────────┴──────────────────────────────────────────┴──────────────┘
-```
+Complete every item before the demonstration begins. Do not proceed if any check fails.
+
+| # | Check | Command / Action | Expected |
+|---|---|---|---|
+| 1 | Server starts | `python wsgi.py` | Waitress banner, no errors |
+| 2 | Database accessible | Server starts without SQLite errors | Clean startup |
+| 3 | ML model loads | No `[WARN] Model file not found` in startup output | Model loaded |
+| 4 | Dashboard login works | Browse `http://127.0.0.1:5000/dashboard-login`, log in as `dashadmin` / `Dash@Admin1` | Dashboard loads |
+| 5 | User login works | Browse `http://127.0.0.1:5000/login`, log in as `admin` / `Secure@123` | Login success |
+| 6 | HIBP API reachable | `python -c "import requests; r=requests.get('https://api.pwnedpasswords.com/range/5BAA6', timeout=3); print(r.status_code)"` | `200` |
+| 7 | Attack simulator targets localhost | `python attack_simulation.py login --dry-run` | Dry-run output, no network calls |
+| 8 | Demo credentials available | Username/password pairs noted for live use | Ready |
+| 9 | Database is fresh | Delete `logs/bruteshield.db` and restart server for a clean slate, or accept existing data | Clean or acceptable |
+| 10 | No sensitive data displayed | Close unrelated browser tabs; hide desktop icons | Clean screen |
+
+**HIBP offline fallback:** If HIBP is unreachable, the application degrades gracefully — it reports `offline_mode` and does not block registration. Mention this during the demo if it occurs.
 
 ---
 
-## 3. Step-by-Step Demonstration Script
+## Presentation Script
 
-### Phase 0: System Health & Security Baseline (1.5 Minutes)
-**Objective:** Prove to evaluators that the project meets enterprise security standards, has 0 known vulnerabilities, and passes 50 automated tests.
+### PHASE 1 — Introduction & User Onboarding (~2 minutes)
 
-1. **Verify Automated Test Suite (50/50 Passing):**
+**Objective:** Present the problem statement and demonstrate proactive client-side security.
+
+**Speaker notes:**
+> "BruteShield protects web applications against automated credential attacks — brute force, credential stuffing, and password spraying. Rather than a simple attempt counter, it uses Machine Learning anomaly detection on behavioural features extracted from a sliding time window."
+
+**Steps:**
+
+1. Navigate to `http://127.0.0.1:5000/signup`.
+2. **Weak password demonstration:**
+   - Enter username: `demo_student`
+   - Enter password: `password123`
+   - Show: zxcvbn rates this as "Weak" (score 0–1). Shannon entropy is low (~25 bits). Registration is rejected.
+3. **HIBP k-Anonymity demonstration:**
+   - Enter password: `Password1!`
+   - Show: The system queries the Have I Been Pwned API using k-Anonymity. Only the first 5 characters of the SHA-1 hash are sent over the network; the full password is never transmitted.
+   - Show breach count warning if the password is found.
+   - **Accuracy note:** k-Anonymity means the HIBP server cannot determine which specific password was checked from the ~500 candidate hashes returned. It does not mean the check is fully anonymous — the client's IP is still visible to the HIBP API server.
+4. **Successful registration:**
+   - Enter a strong password (e.g., `K8#mQ9!vL2$xP5@wR7`).
+   - Show: Entropy > 60 bits, zxcvbn score 4, registration succeeds.
+
+**Recovery if step fails:** If HIBP is unreachable, explain offline fallback. If signup fails for another reason, use the pre-existing `admin` account.
+
+---
+
+### PHASE 2 — Password Vault (~2 minutes)
+
+**Objective:** Demonstrate encrypted credential storage with tamper detection.
+
+**Steps:**
+
+1. Log in at `http://127.0.0.1:5000/login` with the newly created account (or `admin` / `Secure@123`).
+2. Navigate to `http://127.0.0.1:5000/vault`.
+3. **Store a credential:**
+   - Service: `AWS Console`
+   - Username: `ops@example.com`
+   - Password: `SuperSecretDemo2026#`
+   - Click Encrypt & Save.
+4. **Show database stores no plaintext:**
+   - Open a second terminal:
    ```powershell
-   .\venv\Scripts\python.exe -m pytest tests/ -v
+   .\venv\Scripts\python.exe -c "import sqlite3; conn=sqlite3.connect('logs/bruteshield.db'); rows=conn.execute('SELECT service_name, encrypted_password, nonce FROM vault_items ORDER BY id DESC LIMIT 1').fetchall(); print(rows); conn.close()"
    ```
-   *Speaking Point:* "We have implemented a comprehensive 50-test test suite covering ML inference, sliding-window feature extraction, cryptographic vault isolation, CSRF protection, and OWASP ASVS compliance. All 50 tests execute and pass in under 25 seconds."
+   - Show: `encrypted_password` contains base64-encoded ciphertext; `nonce` contains a 12-byte random IV. No plaintext.
+5. **Explain encryption architecture:**
+   > "Each vault entry is encrypted using AES-256-GCM with a unique 96-bit random nonce. GCM is an Authenticated Encryption mode — it provides both confidentiality and a 128-bit authentication tag. If even a single bit of the ciphertext is modified, decryption fails with an `InvalidTag` error."
+   
+   > "The encryption key is derived from `BRUTESHIELD_VAULT_KEY`, a server-side 32-byte master key. The server holds both the ciphertext and the key, so this is server-side encryption at rest — not a zero-knowledge architecture. The user trusts the server with the key."
 
-2. **Verify Zero CVEs (pip-audit):**
-   ```powershell
-   .\venv\Scripts\pip-audit.exe
-   ```
-   *Speaking Point:* "We audited all project dependencies against the Python Packaging Advisory Database. Zero known vulnerabilities exist in our production stack."
-
-3. **Verify Zero Static Flaws (Bandit SAST):**
-   ```powershell
-   .\venv\Scripts\bandit.exe -r bruteshield/ app.py
-   ```
-   *Speaking Point:* "Our static application security testing (SAST) scan reports zero high, medium, or low severity issues across the entire codebase."
+**Recovery if step fails:** If vault save fails, verify login session is active and retry.
 
 ---
 
-### Phase 1: User Onboarding, Shannon Entropy & HIBP Audit (2 Minutes)
-**Objective:** Demonstrate proactive defense before authentication credentials are even stored.
+### PHASE 3 — Brute-Force Protection & Adaptive Cooldown (~2 minutes)
 
-1. **Launch BruteShield Server:**
+**Objective:** Demonstrate BruteShield detecting and blocking an automated attack in real time.
+
+**Steps:**
+
+1. **Open SOC Dashboard** in one browser tab:
+   - `http://127.0.0.1:5000/dashboard-login`
+   - Log in: `dashadmin` / `Dash@Admin1`
+2. **Run attack simulation** in terminal:
    ```powershell
-   .\venv\Scripts\python.exe wsgi.py
-   # or run_production.bat
+   .\venv\Scripts\python.exe attack_simulation.py login --max-attempts 15
    ```
-2. **Navigate to:** `http://127.0.0.1:5000/signup`
-3. **Demonstrate Weak Password Detection:**
-   - Type username: `demo_student`
-   - Type password: `password123`
-   - **Show:** The Shannon entropy meter indicates low entropy (~25 bits), the strength indicator flags "Weak", and the client displays a zxcvbn warning: *"This is a top-10 common password"*.
-   - Click **Create Account** -> Registration is rejected with a clear policy violation message.
-4. **Demonstrate HIBP k-Anonymity Privacy Guarantee:**
-   - Type password: `Password123!`
-   - **Show:** The system queries the Have I Been Pwned API using **k-Anonymity**. Only the first 5 characters of the SHA-1 hash (`CBFD9`) are sent over the wire; the server returns a range of suffixes and the client matches locally.
-   - **Show:** Notification appears: *"Warning: This password has appeared in over 200,000 data breaches!"*
-5. **Register with Strong Password:**
-   - Type password: `K8#mQ9!vL2$xP5@wR7` (Entropy > 60 bits, Score 4/4).
-   - Account successfully created!
+3. **Watch terminal output:**
+   - Attempts 1–3: Failed login attempts logged.
+   - Attempt ~4: CAPTCHA friction challenge triggered (adaptive escalation).
+   - Attempt ~5: ML behavioural anomaly detected → IP blocked on cooldown.
+4. **Show SOC Dashboard response:**
+   - Refresh or check the dashboard.
+   - Show: HIGH-priority alert generated with block duration.
+   - Show: Recent activity feed shows the failed attempt burst.
+5. **Explain escalation ladder:**
+   > "Block durations escalate: 60 seconds → 300 seconds → 900 seconds → 3600 seconds. Repeat offenders face progressively longer lockouts. This is the adaptive cooldown mechanism."
+
+**Recovery if step fails:** If the IP is already blocked from a previous test, unblock via the dashboard Investigate panel, or delete `logs/bruteshield.db` and restart.
 
 ---
 
-### Phase 2: Zero-Knowledge AES-256-GCM Vault (2 Minutes)
-**Objective:** Prove mathematically sound cryptographic storage and tamper detection.
+### PHASE 4 — Honeypot Decoy (~1.5 minutes)
 
-1. **Log in:** `http://127.0.0.1:5000/login` with your newly registered credentials.
-2. **Navigate to Vault:** `/vault`
-3. **Store a Sensitive Secret:**
-   - Service: `AWS Production Console`
-   - Username: `ops-lead@company.internal`
-   - Password: `SuperSecretProductionPassword#2026`
-   - Click **Encrypt & Save**.
-4. **Demonstrate Zero Plaintext in Database (Live SQLite Inspection):**
-   - Open a second terminal and query the database:
+**Objective:** Demonstrate deception technology trapping scanner probes.
+
+**Steps:**
+
+1. **Explain concept:**
+   > "Automated vulnerability scanners and attacker reconnaissance tools probe common paths like /admin-login. BruteShield deploys a convincing fake login page at `/admin-login` that records every probe while the real administrative portal is at `/dashboard-login`."
+2. **Run honeypot simulation:**
    ```powershell
-   .\venv\Scripts\python.exe -c "import sqlite3; conn = sqlite3.connect('logs/bruteshield.db'); print(conn.execute('SELECT service_name, username, encrypted_password FROM vault_items').fetchall()); conn.close()"
+   .\venv\Scripts\python.exe attack_simulation.py honeypot --max-attempts 5
    ```
-   - **Show:** The database contains only base64-encoded binary ciphertext containing a 12-byte random nonce, ciphertext payload, and 16-byte authentication tag (`AES-256-GCM`). **Zero plaintext exists on disk.**
-5. **Demonstrate Tamper Detection:**
-   - *Speaking Point:* "If a malicious database administrator or attacker alters even a single bit of the stored ciphertext, AES-GCM's cryptographic authentication tag fails verification (`InvalidTag`), completely preventing decryption."
+3. **Show honeypot logs in dashboard:**
+   - In the SOC Dashboard, check the Honeypot section.
+   - Show: Probes captured with IP, timestamp, and attempted username.
+   - Show: The `password_tried` field displays a masked value (e.g., `pa***rd (8 chars)`) — raw submitted passwords are not stored in the database.
+
+**Recovery if step fails:** If honeypot page returns an error, verify server is running and retry.
 
 ---
 
-### Phase 3: Live Attack Simulation & SOC Response (3 Minutes)
-**Objective:** Demonstrate BruteShield actively detecting and mitigating a multi-attempt brute force attack.
+### PHASE 5 — SOC Dashboard & Research Benchmarks (~2–3 minutes)
 
-1. **Open SOC Dashboard in Browser:**
-   - Navigate to: `http://127.0.0.1:5000/dashboard-login`
-   - Log in with administrative credentials:
-     - Username: `dashadmin`
-     - Password: `Dash@Admin1`
-   - View the **Live Overview** page. Note the current metrics and Threat Alert feed.
-2. **Execute Live Attack Simulation in Terminal:**
-   ```powershell
-   .\venv\Scripts\python.exe attack_simulation.py login
-   ```
-   - **Watch the Console:**
-     - Attempts 1–3: Standard failed authentication logged.
-     - Attempt 4: Adaptive CAPTCHA challenge triggered.
-     - Attempt 5: **ML Behavioral Anomaly Detected** -> Attacker IP blocked on Tier-1 cooldown (60 seconds).
-3. **Verify Immediate SOC Telemetry:**
-   - Refresh the SOC Dashboard (or wait for live polling).
-   - **Show:**
-     - High-priority Threat Alert: *"CRITICAL: High-frequency brute force attack detected from 127.0.0.1"*.
-     - Risk Score meter elevated to Critical (Score > 0.85).
-     - Timeline chart updates with the attack spike.
-4. **Demonstrate Deep Investigation & Admin Unblock:**
-   - Click on the alert or navigate to **Threat Analysis**.
-   - Click **Investigate IP** for `127.0.0.1`.
-   - **Show the Sliding-Window ML Feature Vector:**
-     - `fail_count_15m`: 5
-     - `time_span_seconds`: ~1.2s
-     - `fail_rate_per_sec`: ~4.1 ops/sec
-     - `entropy_of_passwords`: 2.85
-     - `distinct_usernames`: 1
-   - Click **Unblock IP** -> IP block is cleared immediately from memory and database.
+**Objective:** Demonstrate operational monitoring and present research evaluation results.
+
+**Steps:**
+
+1. **Overview tab:** Show live security metrics — total attempts, blocked IPs, active alerts, recent activity timeline.
+2. **Threats tab:** Show active threat alerts with severity levels (HIGH/MEDIUM/INFO). Demonstrate alert acknowledgement.
+3. **Investigate tab:** Show the ML feature vector for a suspicious IP — total attempts, failed attempts, distinct usernames, average gap, minimum gap, failure ratio.
+4. **System tab:** Show model metadata — model type (IsolationForest), feature count (6), sliding window (900s).
+5. **Benchmarks tab:**
+   - **Clearly distinguish three data partitions:**
+     - **Operational telemetry:** Live data from this running instance.
+     - **Synthetic benchmark:** Simulated 300 normal + 190 attacker IPs (Phase 1).
+     - **LANL research benchmark:** Los Alamos National Laboratory enterprise authentication dataset evaluation (Phase 2B).
+   - **LANL results (actual verified values):**
+     - Dataset: Days 0–2.31 empirical slice, 21.26M retained authentication events (Kerberos/NTLM), 10 exact-second red-team matches in slice out of 749 total.
+     - Experiment A (Temporal Generalization): Isolation Forest achieved 75% recall, 0.14% precision, ROC-AUC 0.8026. One-Class SVM achieved 50% recall with ROC-AUC 0.9382.
+     - Experiment B (Unseen-Identity): All models scored 0 TP, 0 FN (single-class test set, ROC-AUC undefined).
+     - Custom Fail2ban baseline: 8,921 blocks triggered, 0% episode coverage — threshold-based counters failed completely on the LANL attack patterns.
+
+> [!IMPORTANT]
+> "These are results from a 2.31-day empirical time slice, not the full 58-day LANL dataset. The dataset contains enterprise Active Directory authentication (Kerberos/NTLM) events, not interactive web logins. The evaluation demonstrates that BruteShield's sliding-window behavioural features transfer to enterprise authentication telemetry."
+
+**Recovery if step fails:** If dashboard data is empty, run the attack simulation first to generate telemetry.
 
 ---
 
-### Phase 4: Proactive Decoy Honeypot (`/admin-login`) (1.5 Minutes)
-**Objective:** Demonstrate deception technology isolating attackers and protecting administrative routes.
+### PHASE 6 — Conclusion (~30–60 seconds)
 
-1. **Explain the Deception Mechanism:**
-   - *Speaking Point:* "Attackers and automated vulnerability scanners routinely probe common URL paths like `/admin`, `/admin-login`, and `/wp-login.php`. BruteShield sets up a fake, convincing login trap at `/admin-login` while keeping the real SOC portal at `/dashboard-login`."
-2. **Execute Honeypot Attack:**
-   ```powershell
-   .\venv\Scripts\python.exe attack_simulation.py honeypot
-   ```
-3. **Show Honeypot Telemetry in SOC Dashboard:**
-   - In the SOC Dashboard, click the **Honeypot Decoy** tab.
-   - **Show:**
-     - Real-time probe logs capturing attacker IP, timestamp, user agent, and targeted username.
-     - **Privacy Defense:** The `password_tried` field is masked (`p***d`) so accidental user misdirection does not expose real credentials.
+**Key talking points:**
+
+1. **Main technical contribution:** Behavioural ML anomaly detection using 6 sliding-window features, replacing static threshold counters.
+2. **Security architecture:** Defense-in-depth with CSRF protection, session fixation mitigation, AES-256-GCM vault, HIBP k-Anonymity, password masking in honeypot logs, and production secret enforcement.
+3. **ML contribution:** Isolation Forest anomaly detector trained on synthetic attack telemetry, evaluated against real LANL enterprise data. Catches low-and-slow attacks that evade Fail2ban.
+4. **Limitations:** SQLite limits concurrent write throughput; the LANL evaluation used a 2.31-day slice (not the full 58-day dataset); the model was trained on synthetic data, not production attack traffic.
+5. **Current deployment scope:** Local development and demonstration. Production deployment guide provided but not executed on a public server.
+6. **Future work:** PostgreSQL migration for concurrent deployments, real-time WebSocket dashboard updates, distributed IP reputation, additional ML models (LSTM sequence models), and integration with SIEM platforms.
 
 ---
 
-### Phase 5: Scientific Evaluation & Research Benchmarks (2 Minutes)
-**Objective:** Highlight academic rigor and benchmarking against the Los Alamos National Laboratory (LANL) dataset.
+## Faculty Viva — Technical Q&A (20+ Questions)
 
-1. **Navigate to:** SOC Dashboard -> **Scientific Benchmarks** tab (`/dashboard/benchmarks`).
-2. **Highlight Tripartite Data Partitioning:**
-   - **Partition 1 (Operational):** Live local web traffic.
-   - **Partition 2 (Synthetic Baseline):** Controlled stress test scenarios.
-   - **Partition 3 (LANL Cyber Dataset):** Comprehensive real-world enterprise authentication benchmark.
-3. **Key LANL Benchmark Findings:**
-   - Model A (Random Forest with Temporal Features): **97.4% Precision**, **94.8% Recall**.
-   - Baseline Comparison: BruteShield blocked attackers **84.1% faster** than classic Fail2ban while generating **73% fewer false positives** under distributed attack conditions.
+### Q1. Why was BruteShield developed?
+
+**Short:** To demonstrate that ML-based behavioural analysis detects attacks that static threshold counters miss — specifically low-and-slow and distributed credential attacks.
+
+**Detailed:** Traditional defences like Fail2ban block an IP after a fixed number of failures (e.g., 5 in 60 seconds). An attacker who waits 61 seconds between attempts, or distributes attempts across many IPs, evades this entirely. BruteShield extracts temporal and behavioural features from a sliding window and feeds them to an Isolation Forest anomaly detector, which learns the statistical distribution of normal authentication traffic and flags deviations.
 
 ---
 
-## 4. Faculty Q&A Cheat Sheet (Top 10 Questions)
+### Q2. What is the difference between brute-force and credential-stuffing attacks?
 
-### Q1: Why use Machine Learning instead of a standard Fail2ban counter?
-> **Answer:** Standard threshold counters (e.g. 5 fails in 60s) are easily bypassed by **"low-and-slow"** attacks where an attacker waits 61 seconds between attempts, or **password spraying** across thousands of accounts. BruteShield's Random Forest classifier examines multi-dimensional temporal sliding windows (password entropy, request acceleration, username variety, failure ratios), detecting sophisticated attacks even when individual thresholds are never breached.
+**Short:** Brute force tries many passwords against one account; credential stuffing replays known username/password pairs from previous breaches across multiple accounts.
 
-### Q2: How does the sliding window feature extractor operate in production?
-> **Answer:** Feature extraction runs in `O(K)` time where `K` is the number of attempts within the sliding window (default 15 minutes). We use indexed SQLite queries (`WHERE ip = ? AND timestamp > ?`) with Write-Ahead Logging (WAL) and memory caching, resulting in feature computation times under 1.8 milliseconds per request.
+**Detailed:** In brute force, the attacker iterates through a password dictionary targeting a single username. In credential stuffing, the attacker has a list of compromised credentials (from a data breach) and tests each against the target site, typically one attempt per credential pair. BruteShield's `distinct_usernames` feature helps distinguish these — high distinct username counts suggest credential stuffing.
 
-### Q3: Why AES-GCM instead of AES-CBC for password vault storage?
-> **Answer:** AES-CBC requires separate message authentication (e.g., HMAC-SHA256) and is vulnerable to padding oracle attacks if not implemented flawlessly. AES-GCM is an Authenticated Encryption with Associated Data (AEAD) cipher that computes an authentication tag in hardware (GHASH), providing simultaneous confidentiality and cryptographic integrity. Any tampering with the ciphertext causes immediate decryption failure.
+---
 
-### Q4: How is user privacy preserved during Have I Been Pwned checks?
-> **Answer:** We implement **k-Anonymity**. The application computes `SHA-1(password)` and sends only the first 5 hexadecimal characters (20 bits) to the HIBP API. HIBP returns approximately 500 candidate suffix hashes. The application searches locally for the remaining 35 characters. HIBP never sees the user's password or the complete hash.
+### Q3. How are the six ML features extracted?
 
-### Q5: What prevents an attacker from exploiting CSRF or session fixation?
-> **Answer:** 
-> 1. **CSRF:** All state-changing POST requests require a 256-bit cryptographically secure token stored in the user's session and verified via `secrets.compare_digest()`.
-> 2. **Session Fixation:** Upon successful login or privilege change, `session.clear()` is immediately invoked before writing authenticated user identifiers.
-> 3. **Cookies:** Enforce `HttpOnly`, `SameSite=Lax`, and `Secure` in production.
+**Short:** From all login attempts by a given IP within the most recent 900-second sliding window: total attempts, failed attempts, distinct usernames, average inter-attempt gap, minimum gap, and failure ratio.
 
-### Q6: What happens if an external attacker tries to brute-force the Honeypot?
-> **Answer:** Honeypot endpoints (`/admin-login`) intentionally do not validate CSRF tokens so automated bots are trapped without friction. Every attempt records the probe into `honeypot_logs`, triggers high-priority SOC alerts, and can instantly blacklist the offending IP.
+**Detailed:** `get_features_for_ip()` queries `login_attempts WHERE ip = ? AND timestamp >= (now - 900)`, ordered by timestamp ascending. It computes:
+1. `total_attempts` — count of rows.
+2. `failed_attempts` — count where `success = 0`.
+3. `distinct_usernames` — `len(set(username))`.
+4. `avg_gap` — mean of consecutive timestamp differences.
+5. `min_gap` — minimum timestamp gap (detects burst speed).
+6. `failure_ratio` — `failed / total`.
 
-### Q7: How does BruteShield prevent database locking under high concurrent load?
-> **Answer:** SQLite is configured with Write-Ahead Logging (`PRAGMA journal_mode = WAL`) and a `busy_timeout = 5000` milliseconds. In WAL mode, concurrent readers never block writers, and writers never block readers.
+---
 
-### Q8: What dataset was used to validate the model, and how was data leakage avoided?
-> **Answer:** We evaluated the engine against the Los Alamos National Laboratory (LANL) Comprehensive Multi-Source Cyber-Security Events dataset. Strict boundary embargoes and forward-chaining temporal cross-validation were enforced: training data strictly preceded testing data chronologically, avoiding lookahead bias.
+### Q4. Why was Isolation Forest selected?
 
-### Q9: Can an attacker spoof their IP address using the `X-Forwarded-For` header?
-> **Answer:** No. BruteShield's `get_client_ip()` resolves IP addresses from `X-Forwarded-For` *only* if the immediate peer IP matches the configured `TRUSTED_PROXIES` whitelist (e.g. our Nginx reverse proxy). Untrusted clients cannot inject fake IP headers.
+**Short:** It is an unsupervised anomaly detector that does not require labelled attack data for training — only examples of normal traffic.
 
-### Q10: What are the project deliverables and audit records?
-> **Answer:** The repository includes:
-> - `SECURITY_AUDIT.md`: OWASP ASVS 5.0.0 compliance audit.
-> - `PENETRATION_TEST_REPORT.md`: OWASP WSTG 4.2 attack test results.
-> - `TEST_MATRIX.md`: 50/50 automated test verification log.
-> - `DEPENDENCY_AUDIT.md`: pip-audit CVE verification.
-> - `DEPLOYMENT_GUIDE.md`: Production WSGI & Nginx configuration.
-> - `REAL_DATASET_EVALUATION.md`: LANL benchmark methodology.
+**Detailed:** Isolation Forest works by randomly partitioning features with recursive splits. Anomalies (rare, different points) require fewer splits to isolate, producing shorter average path lengths. The `decision_function` returns a continuous anomaly score: negative values indicate anomalies (prediction = −1). This suits our use case because we have abundant normal login telemetry but limited labelled attack data.
+
+---
+
+### Q5. Why was One-Class SVM evaluated?
+
+**Short:** As a second unsupervised anomaly detection baseline to compare against Isolation Forest.
+
+**Detailed:** One-Class SVM fits a hyperplane (or hypersphere in RBF kernel space) around normal data, then classifies points outside the boundary as anomalies. In the LANL evaluation (Experiment A), One-Class SVM achieved the best ROC-AUC (0.9382) and lowest false positive rate (1.45%), but lower recall (50%) compared to Isolation Forest (75%).
+
+---
+
+### Q6. Why is Random Forest included as a supervised comparison?
+
+**Short:** To benchmark a supervised model against the unsupervised approaches, using the LANL red-team labels.
+
+**Detailed:** Random Forest requires labelled training data (attack vs. normal). In the LANL evaluation, it was trained with partition-local ambiguity embargoes. It achieved lower recall (25%) and higher FPR (10.51%) than both unsupervised models, suggesting that the small number of red-team events in the training partition provided insufficient positive examples for effective supervised learning.
+
+---
+
+### Q7. How does the anomaly-score orientation work?
+
+**Short:** Isolation Forest `decision_function()` returns negative scores for anomalies and positive scores for normal points. `predict()` returns −1 for anomalies and +1 for normal.
+
+**Detailed:** The score threshold is at 0. Scores between 0 and `CAPTCHA_SCORE_LIMIT` (0.06) trigger a CAPTCHA challenge (borderline suspicious). Scores below 0 trigger a full block. This continuous scoring allows graduated defensive response rather than a binary decision.
+
+---
+
+### Q8. How is the anomaly threshold selected?
+
+**Short:** The Isolation Forest's default `contamination` parameter sets the threshold during training. The `CAPTCHA_SCORE_LIMIT` (0.06) defines the borderline warning band.
+
+**Detailed:** During training on synthetic data (`train_synthetic.py`), the contamination parameter estimates the proportion of anomalies in the training set. At inference time, `decision_function()` returns the raw anomaly score. The configurable `CAPTCHA_SCORE_LIMIT` creates a soft zone: scores just above 0 but below 0.06 trigger CAPTCHA friction before escalating to a block.
+
+---
+
+### Q9. Why is a 900-second sliding window used?
+
+**Short:** 15 minutes captures both fast bursts and slower distributed attacks while keeping the query scope manageable.
+
+**Detailed:** A very short window (e.g., 60 seconds) misses low-and-slow attacks that spread attempts over several minutes. A very long window (e.g., 24 hours) accumulates stale data from resolved incidents, diluting current attack signals. 900 seconds balances detection sensitivity against computational cost — the indexed SQLite query `WHERE ip = ? AND timestamp >= ?` runs in under 2 milliseconds.
+
+---
+
+### Q10. Why is a 300-second stride used in the LANL evaluation?
+
+**Short:** The 300-second (5-minute) stride controls how frequently the sliding window is re-evaluated across the LANL timeline.
+
+**Detailed:** With a 900-second window and 300-second stride, consecutive evaluation windows overlap by 600 seconds (66%). This ensures that attack episodes are captured even if they begin partway through a window. The stride is an evaluation parameter — the production application evaluates features on every login attempt, not at fixed time intervals.
+
+---
+
+### Q11. How do low-and-slow attacks differ from fast brute force?
+
+**Short:** Low-and-slow attacks use long delays between attempts to stay below threshold-based detection. Fast brute force sends rapid-fire requests.
+
+**Detailed:** A fast brute-force attack might send 10 attempts in 2 seconds. A low-and-slow attack might send one attempt every 30–120 seconds. Fail2ban's "5 failures in 60 seconds" rule never triggers because the attacker paces below the threshold. BruteShield's ML features — particularly `failure_ratio`, `avg_gap`, and `distinct_usernames` — capture the cumulative behavioural pattern across the full 900-second window.
+
+---
+
+### Q12. What does the Fail2ban-style baseline measure?
+
+**Short:** It simulates a simple threshold counter: block after 5 failures within 60 seconds. Used to quantify how many LANL attack episodes this approach catches versus BruteShield's ML.
+
+**Detailed:** In the LANL evaluation, the custom Fail2ban state machine triggered 8,921 blocks. However, 100% of these were background-only blocks (false alarms on normal enterprise authentication bursts). Zero blocks were associated with actual red-team attack episodes. BruteShield's ML anomaly detector identified 100% of the low-and-slow proxy episodes that Fail2ban missed entirely.
+
+---
+
+### Q13. How is the LANL dataset structured?
+
+**Short:** It contains 58 days of enterprise authentication events from Los Alamos National Laboratory, including 749 known red-team (simulated attacker) events.
+
+**Detailed:** The dataset includes Kerberos ticket requests and NTLM authentication events — not interactive web logins. Each record contains: timestamp (seconds), source user, destination user, source computer, destination computer, authentication type, logon type, authentication orientation, and success/failure status. Red-team events are listed in a separate `redteam.txt` file with user, source computer, destination computer, and timestamp.
+
+---
+
+### Q14. What are the limitations of LANL failure-record visibility?
+
+**Short:** The dataset records successful and failed authentications but does not distinguish between human password mistakes and automated attacks.
+
+**Detailed:** The red-team labels identify which events were part of the controlled attack exercise, but the authentication telemetry itself does not contain attack metadata. Failed authentications could represent legitimate users mistyping passwords, expired Kerberos tickets, or actual attacks. BruteShield's evaluation matched red-team timestamps to authentication failures using greedy 1-to-1 matching with ±2 second tolerance.
+
+---
+
+### Q15. How are red-team events matched?
+
+**Short:** Greedy 1-to-1 matching by (source user, destination user, source computer, destination computer, timestamp ±2 seconds).
+
+**Detailed:** First pass: exact-second matches (Δτ = 0). Second pass: tolerance matches (0 < |Δτ| ≤ 2 seconds). Both passes use greedy 1-to-1 assignment — each red-team event matches at most one authentication event. The Hopcroft-Karp bipartite matching algorithm was run as a diagnostic to verify that greedy matching did not miss any optimal assignments (difference = +0).
+
+---
+
+### Q16. What do PR-AUC and ROC-AUC measure?
+
+**Short:** ROC-AUC measures discrimination between anomalies and normals at all thresholds. PR-AUC (Average Precision) is more informative under class imbalance.
+
+**Detailed:** ROC-AUC plots True Positive Rate vs. False Positive Rate. With extreme class imbalance (4 positive events vs. 30,000+ negative windows), a model can achieve high ROC-AUC while producing many false positives. PR-AUC (Precision vs. Recall) is more sensitive to this — it reflects whether the model's positive predictions are correct. In Experiment A, Isolation Forest had ROC-AUC 0.8026 but AP (Average Precision) of only 0.0023, reflecting the fundamental difficulty of the task.
+
+---
+
+### Q17. Why is AES-GCM used for vault encryption?
+
+**Short:** AES-GCM provides authenticated encryption — both confidentiality and tamper detection — in a single operation.
+
+**Detailed:** AES-GCM (Galois/Counter Mode) is an AEAD (Authenticated Encryption with Associated Data) cipher. It encrypts with AES in counter mode and simultaneously computes a 128-bit GMAC authentication tag over the ciphertext. If any bit of the ciphertext is modified, `AESGCM.decrypt()` raises `InvalidTag` and returns nothing. This prevents padding oracle attacks that affect unauthenticated modes like AES-CBC. Each vault entry uses a unique 96-bit random nonce (`os.urandom(12)`).
+
+---
+
+### Q18. How does HIBP k-Anonymity work?
+
+**Short:** The application sends only the first 5 characters of the SHA-1 hash of the password to the HIBP API. HIBP returns ~500 candidate suffixes, and the application checks for a match locally.
+
+**Detailed:** `hashlib.sha1(password.encode(), usedforsecurity=False)` computes the SHA-1 hash. The first 5 hex characters (20 bits) are sent to `api.pwnedpasswords.com/range/{prefix}`. The API returns all hash suffixes matching that prefix. The application compares the remaining 35 hex characters locally. The HIBP server learns only the prefix — it cannot determine which of the ~500 returned candidates was the actual password hash.
+
+---
+
+### Q19. How is honeypot telemetry protected?
+
+**Short:** Raw submitted passwords are never stored in the honeypot logs. Only a masked representation and the password length are recorded.
+
+**Detailed:** `log_honeypot_attempt()` calls `mask_password(password)` before database insertion. For a password like `mysecretpassword`, the stored value is `my***rd (16 chars)`. The first 2 and last 2 characters are retained for investigative context, but the full password is never persisted. This prevents accidental credential exposure if a legitimate user mistakenly enters their real password on the honeypot page.
+
+---
+
+### Q20. How is BruteShield deployed using WSGI?
+
+**Short:** `wsgi.py` creates the Flask application using the application factory and exposes a WSGI-compatible `app` object. External servers (Waitress/Gunicorn) import this object.
+
+**Detailed:** `wsgi.py` calls `create_app(Config)` to initialise the Flask application, database, blueprints, and middleware. Waitress (Windows) runs `waitress.serve(app, ...)` with configurable threads. Gunicorn (Linux) forks worker processes, each importing `wsgi:app`. Neither Waitress nor Gunicorn handles TLS — a reverse proxy (Nginx/Caddy) terminates HTTPS in front of the WSGI server.
+
+---
+
+### Q21. Why does BruteShield use SQLite instead of PostgreSQL?
+
+**Short:** SQLite requires zero infrastructure setup, runs embedded in the Python process, and is sufficient for single-server demonstration and development.
+
+**Detailed:** BruteShield is a B.Tech capstone project designed for local execution and faculty demonstrations. SQLite provides ACID transactions, WAL mode for concurrent readers, and requires no separate database server. For production deployment serving hundreds of concurrent users, migration to PostgreSQL would be recommended to support concurrent writers and connection pooling.
+
+---
+
+### Q22. How does CSRF protection work in BruteShield?
+
+**Short:** Every state-changing POST request must include a 256-bit CSRF token that is generated per session, stored in a secure HttpOnly cookie, and verified server-side using constant-time comparison.
+
+**Detailed:** `generate_csrf_token()` creates `secrets.token_hex(32)` and stores it in `session["_csrf_token"]`. Templates include the token in a hidden form field. The `check_csrf_token()` before-request hook verifies the submitted token against the session token using `secrets.compare_digest()` (constant-time to prevent timing attacks). The honeypot `/admin-login` is intentionally exempt so automated scanner scripts can be trapped.
+
+---
+
+### Q23. What is the sliding-window feature extraction time complexity?
+
+**Short:** O(K) where K is the number of login attempts in the window, plus O(log N) for the indexed SQLite lookup.
+
+**Detailed:** The SQLite query uses the `idx_login_attempts_ip_time` composite index on `(ip, timestamp)`, making the lookup O(log N). Feature computation (gap calculation, distinct username set, failure ratio) is O(K) where K is typically small (< 50 attempts in a 15-minute window). Measured production latency is under 2 milliseconds per evaluation.
+
+---
+
+### Q24. How does session fixation mitigation work?
+
+**Short:** On successful login, `session.clear()` is called before writing the authenticated user's identity, ensuring the pre-authentication session ID cannot be reused.
+
+**Detailed:** If an attacker obtains a session cookie before the victim authenticates, session fixation allows the attacker to hijack the session after login. BruteShield prevents this by clearing all session data (which causes Flask to issue a new session cookie) immediately before writing `session["user_id"]`, `session["username"]`, and `session["role"]`.
