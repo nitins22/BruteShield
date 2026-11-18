@@ -1,0 +1,21 @@
+graph TD
+    Analyst[SOC Security Analyst] -->|Auth as dashadmin| WebUI[SOC Live Dashboard]
+    WebUI --> API1[GET /dashboard/api/overview]
+    WebUI --> API2[GET /dashboard/api/threats]
+    WebUI --> API3[GET /dashboard/api/investigate?ip=X]
+    WebUI --> API4[GET /dashboard/api/benchmarks]
+    WebUI --> API5[GET /dashboard/api/honeypot]
+
+    subgraph Data_Partitioning [Strict Data Partitioning Architecture]
+        API1 --> LiveDB[(Live Operational Telemetry)]
+        API2 --> LiveDB
+        API3 --> LiveDB
+        API5 --> LiveDB
+        API4 --> SynthPart[Synthetic Benchmark Baseline Data]
+        API4 --> LANLPart[LANL Empirical Cyber Dataset Benchmark]
+    end
+
+    WebUI --> CanvasCharts[Offline HTML5 Canvas Rendering Engine]
+    LiveDB --> CanvasCharts
+    SynthPart --> CanvasCharts
+    LANLPart --> CanvasCharts

@@ -1,0 +1,11 @@
+graph TD
+    subgraph DFD_Level_0 [DFD Level 0: Context Level Diagram]
+        U1[End User] -->|Credentials & Vault Items| BS((BruteShield Defense Platform))
+        BS -->|Auth Status & Decrypted Vault Data| U1
+        AT[External Attacker] -->|Attack Payloads & Scanner Probes| BS
+        BS -->|CAPTCHA Challenges & Cooldown Blocks| AT
+        AN[SOC Analyst] -->|Management Queries & Unblock Actions| BS
+        BS -->|Live Telemetry, Alerts & Benchmark Metrics| AN
+        BS -->|5-char SHA-1 Prefix Query| HIBP[Have I Been Pwned API]
+        HIBP -->|Candidate Hash Suffix Range| BS
+    end

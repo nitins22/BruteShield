@@ -1,0 +1,63 @@
+erDiagram
+    users ||--o{ vault_items : owns
+    alerts ||--o{ alert_acknowledgements : receives
+
+    users {
+        int id PK
+        string username UK
+        string password_hash
+        string role
+        real created_at
+    }
+
+    vault_items {
+        int id PK
+        int user_id FK
+        string service_name
+        string username
+        string encrypted_password
+        string nonce
+        string notes
+        real created_at
+        real updated_at
+    }
+
+    login_attempts {
+        int id PK
+        string ip
+        string username
+        int success
+        real timestamp
+    }
+
+    blocked_ips {
+        string ip PK
+        real blocked_until
+    }
+
+    block_counts {
+        string ip PK
+        int count
+    }
+
+    honeypot_logs {
+        int id PK
+        string ip
+        string username_tried
+        string password_tried
+        int password_length
+        real timestamp
+    }
+
+    alerts {
+        int id PK
+        string level
+        string message
+        real timestamp
+    }
+
+    alert_acknowledgements {
+        int alert_id PK, FK
+        string acknowledged_by
+        real acknowledged_at
+    }

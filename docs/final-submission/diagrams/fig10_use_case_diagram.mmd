@@ -1,0 +1,18 @@
+graph LR
+    User([Standard User])
+    Analyst([SOC Security Analyst])
+    Attacker([Automated Attacker / Bot])
+
+    User --> UC1(User Registration with Shannon Entropy & HIBP Audit)
+    User --> UC2(User Login with Password Verification)
+    User --> UC3(Manage Encrypted Vault Items - AES-GCM)
+
+    Attacker -.-> UC4(Execute High-Frequency Brute Force)
+    Attacker -.-> UC5(Probe Decoy Honeypot Trap)
+
+    Analyst --> UC6(Authenticate to SOC Dashboard)
+    Analyst --> UC7(Monitor Real-Time Authentication Telemetry)
+    Analyst --> UC8(Investigate Suspicious IP ML Feature Vectors)
+    Analyst --> UC9(Acknowledge Security Threat Alerts)
+    Analyst --> UC10(Unblock Quarantined IP Addresses)
+    Analyst --> UC11(Review LANL & Synthetic Benchmarks)

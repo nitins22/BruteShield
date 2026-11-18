@@ -1,0 +1,52 @@
+graph TB
+    subgraph Client_Layer [Client & Network Layer]
+        Browser[Web Browser / SOC Analyst]
+        Scanner[Automated Attacker / Bot Scanner]
+    end
+
+    subgraph Reverse_Proxy_Layer [Reverse Proxy / TLS Termination]
+        Nginx[Nginx / Caddy Reverse Proxy]
+        TLS[TLS 1.2 / 1.3 Termination]
+        RateLimiter[Connection Rate Limiting]
+    end
+
+    subgraph WSGI_Application_Layer [WSGI Server & Flask Application Engine]
+        WSGIServer[Waitress / Gunicorn WSGI Server]
+        CSRFMiddleware[CSRF & Security Headers Middleware]
+        AuthModule[Authentication & Entropy Engine]
+        VaultModule[Zero-Knowledge AES-256-GCM Vault]
+        HoneypotModule[Decoy Honeypot Trap (/admin-login)]
+        DashboardModule[SOC Telemetry & Real-Time Analytics]
+        MLEngine[Behavioral Anomaly Engine & Sliding Window]
+    end
+
+    subgraph Machine_Learning_Pipeline [Machine Learning Pipeline]
+        ModelLoader[Trained Model / Isolation Forest]
+        FeatureExtractor[6-Dimensional Sliding Window Extractor]
+        DecisionScorer[Continuous Anomaly Scoring Engine]
+    end
+
+    subgraph Persistence_Layer [Persistence & Storage Layer]
+        SQLiteDB[(SQLite Database - WAL Mode)]
+        UsersTable[(users & vault_items)]
+        TelemetryTable[(login_attempts & honeypot_logs)]
+        AlertsTable[(alerts & blocked_ips)]
+    end
+
+    Browser --> Nginx
+    Scanner --> Nginx
+    Nginx --> TLS --> RateLimiter --> WSGIServer
+    WSGIServer --> CSRFMiddleware
+    CSRFMiddleware --> AuthModule
+    CSRFMiddleware --> VaultModule
+    CSRFMiddleware --> DashboardModule
+    Scanner -.->|Targeting /admin-login| HoneypotModule
+    AuthModule --> FeatureExtractor
+    FeatureExtractor --> ModelLoader --> DecisionScorer
+    DecisionScorer -->|Borderline| AuthModule
+    DecisionScorer -->|Anomaly Block| AlertsTable
+    AuthModule --> UsersTable
+    AuthModule --> TelemetryTable
+    VaultModule --> UsersTable
+    HoneypotModule --> TelemetryTable
+    DashboardModule --> SQLiteDB

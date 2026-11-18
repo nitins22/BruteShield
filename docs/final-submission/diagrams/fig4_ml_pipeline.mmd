@@ -1,0 +1,21 @@
+graph TD
+    subgraph Sliding_Window_Extraction [Sliding-Window Feature Extraction]
+        Req[Authentication Telemetry Event] --> DB[(login_attempts Table)]
+        DB --> Query[Query attempts WHERE ip = ? AND timestamp >= now - 900s]
+        Query --> F1[total_attempts: Count of records in 15m]
+        Query --> F2[failed_attempts: Count of failed records]
+        Query --> F3[distinct_usernames: Unique username count]
+        Query --> F4[avg_gap: Mean inter-attempt gap seconds]
+        Query --> F5[min_gap: Minimum inter-attempt burst gap]
+        Query --> F6[failure_ratio: failed_attempts / total_attempts]
+        F1 & F2 & F3 & F4 & F5 & F6 --> Vector[6-Dimensional Feature Vector]
+    end
+
+    subgraph Model_Evaluation [Inference & Tiered Response]
+        Vector --> Model[Isolation Forest Model - trained_model.pkl]
+        Model --> DecFunc[decision_function - Raw Score]
+        DecFunc --> Branch{Decision Threshold}
+        Branch -->|raw_score < 0.0| Block[Anomaly Detected -> Tiered Block Ladder]
+        Branch -->|0.0 <= raw_score < 0.06| Captcha[Borderline Suspicious -> CAPTCHA Challenge]
+        Branch -->|raw_score >= 0.06| Allow[Normal Behavioral Pattern -> Unrestricted]
+    end
