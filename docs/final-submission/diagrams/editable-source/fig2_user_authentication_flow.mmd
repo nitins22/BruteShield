@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor User as User / Attacker
+    participant Proxy as Reverse Proxy (Nginx)
+    participant Auth as Auth Controller (/login)
+    participant Sec as Security Engine (IP & Cooldown)
+    participant ML as ML Anomaly Engine
+    participant DB as SQLite Database (WAL)
+
+    User->>Proxy: POST /login (username, password, csrf_token)
+    Proxy->>Auth: Forward with X-Forwarded-For
+    Auth->>Sec: Check IP status & active cooldown
+    alt IP is actively blocked
+        Sec-->>Auth: Blocked (remaining cooldown seconds)
+        Auth-->>User: 429 Too Many Requests / Cooldown Template
+    else IP is not blocked
+        Auth->>ML: Evaluate needs_captcha(IP)
+        alt Borderline anomaly score (0.0 <= score < 0.06)
+            ML-->>Auth: CAPTCHA Challenge Required
+            Auth->>Auth: Verify arithmetic challenge
+        end
+        Auth->>DB: Query users WHERE username = ?
+        DB-->>Auth: User record (password_hash)
+        Auth->>Auth: Verify check_password_hash(hash, password)
+        Auth->>DB: INSERT INTO login_attempts (ip, user, success, timestamp)
+        alt Authentication Successful
+            Auth->>Auth: session.clear() (Session Fixation Defense)
+            Auth->>Auth: session[user_id] = id; session[role] = role
+            Auth-->>User: 200 OK (Redirect to /vault or /dashboard)
+        else Authentication Failed
+            Auth->>ML: Evaluate is_suspicious_by_ml(IP)
+            alt ML Anomaly Detected (score < 0.0)
+                ML->>DB: block_ip(IP) (Escalate cooldown duration)
+                ML->>DB: create_alert(HIGH, IP blocked by ML)
+                Auth-->>User: 403 Forbidden (Suspicious pattern detected)
+            else Standard Failure
+                Auth-->>User: 200 OK (Invalid username or password)
+            end
+        end
+    end

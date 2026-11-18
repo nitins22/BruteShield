@@ -1,0 +1,24 @@
+stateDiagram-v2
+    [*] --> NormalState: Client IP Activity
+    NormalState --> Tier1: 1st Anomaly Triggered
+    Tier1 --> Tier2: 2nd Anomaly Triggered (within 24h)
+    Tier2 --> Tier3: 3rd Anomaly Triggered
+    Tier3 --> Tier4: 4th+ Anomaly Triggered
+
+    Tier1 --> NormalState: 60s Expiration
+    Tier2 --> NormalState: 300s (5m) Expiration
+    Tier3 --> NormalState: 900s (15m) Expiration
+    Tier4 --> NormalState: 3600s (1h) Expiration
+
+    state Tier1 {
+        desc1: 60 Seconds Lockout (Initial Cooling)
+    }
+    state Tier2 {
+        desc2: 300 Seconds Lockout (5 Minutes Warning)
+    }
+    state Tier3 {
+        desc3: 900 Seconds Lockout (15 Minutes Containment)
+    }
+    state Tier4 {
+        desc4: 3600 Seconds Lockout (1 Hour Hard Isolation)
+    }

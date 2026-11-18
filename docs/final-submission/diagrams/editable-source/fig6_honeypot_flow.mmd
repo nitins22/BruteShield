@@ -1,0 +1,13 @@
+graph LR
+    Attacker[Scanning Bot / Threat Actor] -->|Probing /admin-login| Trap[Decoy Honeypot Route]
+    Trap --> CSRFExempt[CSRF Validation Bypassed]
+    CSRFExempt --> FakeForm[Fake Administrative Login Form Displayed]
+    Attacker -->|Submits Guessed Credentials| PostAction[POST Handler]
+    PostAction --> Mask[mask_password Function]
+    Mask -->|p***d length preserved| MaskedSecret[Masked Telemetry]
+    PostAction --> DB[(honeypot_logs Table)]
+    MaskedSecret --> DB
+    PostAction --> Alert[create_alert CRITICAL: Honeypot Probed]
+    PostAction --> BlockIP[block_ip: Instant IP Quarantine]
+    PostAction --> FakeResponse[Convincing 200 OK: Invalid administrative credentials]
+    FakeResponse --> Attacker

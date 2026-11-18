@@ -1,0 +1,15 @@
+graph TB
+    InternetClient[Internet / Enterprise WAN Clients] -->|HTTPS Port 443| Nginx[Nginx Reverse Proxy]
+    subgraph Reverse_Proxy_Host [Hardened Gateway Boundary]
+        Nginx --> Certbot[Let's Encrypt TLS Certificates]
+        Nginx --> RateLimit[limit_req: 5r/m login, 30r/m api]
+        Nginx --> StaticCache[Static File Cache /static/]
+    end
+
+    Nginx -->|HTTP 127.0.0.1:5000 with X-Forwarded-For| WSGIServer[Waitress (Windows) / Gunicorn (Linux)]
+    
+    subgraph Internal_Application_Boundary [Internal Security Context]
+        WSGIServer --> AppFactory[BruteShield Flask Application]
+        AppFactory --> SQLite[(SQLite Database - logs/bruteshield.db)]
+        AppFactory --> Model[(ML Model - trained_model.pkl)]
+    end

@@ -1,0 +1,21 @@
+graph LR
+    subgraph Encryption_Flow [AES-256-GCM Vault Encryption Flow]
+        P[Plaintext Secret Credential] --> NonceGen[os.urandom 12 Nonce Generator]
+        MasterKey[BRUTESHIELD_VAULT_KEY 32-Byte Master Key] --> GCMEncrypt[AESGCM Encrypt Function]
+        NonceGen -->|96-bit IV Nonce| GCMEncrypt
+        P --> GCMEncrypt
+        GCMEncrypt --> Cipher[Ciphertext Payload]
+        GCMEncrypt --> Tag[128-bit Authentication Tag]
+        Cipher & Tag --> B64C[Base64 Encoded Ciphertext]
+        NonceGen --> B64N[Base64 Encoded Nonce]
+        B64C & B64N --> DB[(SQLite vault_items Table)]
+    end
+
+    subgraph Decryption_Flow [Authenticated Decryption & Tamper Verification Flow]
+        DB --> ReadCipher[Retrieve B64 Ciphertext & Nonce]
+        ReadCipher --> B64Dec[Base64 Decode]
+        MasterKey --> GCMDecrypt[AESGCM Decrypt Function]
+        B64Dec -->|Ciphertext + Auth Tag + Nonce| GCMDecrypt
+        GCMDecrypt -->|Auth Tag Validated| PlaintextResult[Decrypted Secret Returned]
+        GCMDecrypt -->|InvalidTag Tamper Exception| DecryptFail[Access Denied / Cryptographic Alert]
+    end
