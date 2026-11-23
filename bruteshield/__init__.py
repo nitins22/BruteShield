@@ -1,8 +1,11 @@
 import os
 import secrets
+import time
 from flask import Flask, request, session, jsonify, abort
 from bruteshield.config import Config
-from bruteshield.database import init_db
+from bruteshield.database import init_db, get_db, is_postgres_target
+from bruteshield.ml.engine import get_ml_model
+
 
 def create_app(config_class=Config):
     """Application Factory for BruteShield."""
@@ -18,8 +21,40 @@ def create_app(config_class=Config):
     app.config["SESSION_COOKIE_SAMESITE"] = getattr(config_class, "SESSION_COOKIE_SAMESITE", "Lax")
     app.config["SESSION_COOKIE_SECURE"] = getattr(config_class, "SESSION_COOKIE_SECURE", False)
 
-    # Initialize SQLite database and default seeds
-    init_db(app.config["DB_PATH"])
+    # Reverse proxy support (Render / Cloudflare / Nginx)
+    if app.config.get("BEHIND_PROXY"):
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
+    # Initialize database (PostgreSQL or SQLite) and schemas
+    target_db = app.config.get("DATABASE_URL") or app.config.get("DB_PATH")
+    init_db(target_db)
+
+    # Health check endpoint for container orchestrators and Render
+    @app.route("/health", methods=["GET"])
+    def health_check():
+        """Production health-check endpoint for load balancers and Render."""
+        try:
+            conn = get_db(target_db)
+            conn.execute("SELECT 1").fetchone()
+            conn.close()
+            db_status = "connected"
+        except Exception as e:
+            return jsonify({
+                "status": "unhealthy",
+                "database": "disconnected",
+                "error": str(e),
+                "timestamp": time.time()
+            }), 503
+
+        model = get_ml_model()
+        return jsonify({
+            "status": "healthy",
+            "database": db_status,
+            "database_engine": "postgresql" if is_postgres_target(target_db) else "sqlite",
+            "model_loaded": model is not None,
+            "timestamp": time.time()
+        }), 200
 
     # --- 1. CSRF Protection Middleware ---
     def generate_csrf_token():
@@ -76,6 +111,8 @@ def create_app(config_class=Config):
             "frame-ancestors 'self'; "
             "form-action 'self';"
         )
+        if app.config.get("ENV") == "production":
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
     # --- 3. Safe Error Handlers (No Stack Traces Leaked) ---
