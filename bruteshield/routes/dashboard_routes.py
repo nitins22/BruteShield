@@ -621,13 +621,31 @@ def api_system():
         for u in user_rows
     ]
 
-    # Database table row counts & disk size
-    db_path = Config.DB_PATH
-    db_size_bytes = os.path.getsize(db_path) if os.path.exists(db_path) else 0
-    wal_path = db_path + "-wal"
-    wal_size_bytes = os.path.getsize(wal_path) if os.path.exists(wal_path) else 0
+    # Database table row counts & storage metrics
+    from bruteshield.database import is_postgres_target
+    db_url = Config.DATABASE_URL
+    using_postgres = is_postgres_target(db_url)
 
-    journal_mode = conn.execute("PRAGMA journal_mode;").fetchone()[0]
+    if using_postgres:
+        db_engine = "postgresql"
+        db_size_bytes = 0
+        wal_size_bytes = 0
+        journal_mode = "PostgreSQL-WAL"
+        try:
+            size_row = conn.execute(
+                "SELECT pg_database_size(current_database()) as sz"
+            ).fetchone()
+            if size_row:
+                db_size_bytes = size_row["sz"] or 0
+        except Exception:
+            pass
+    else:
+        db_engine = "sqlite"
+        db_path = Config.DB_PATH
+        db_size_bytes = os.path.getsize(db_path) if os.path.exists(db_path) else 0
+        wal_path = db_path + "-wal"
+        wal_size_bytes = os.path.getsize(wal_path) if os.path.exists(wal_path) else 0
+        journal_mode = conn.execute("PRAGMA journal_mode;").fetchone()[0]
 
     table_counts = {
         "users": conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()["cnt"],
@@ -657,7 +675,7 @@ def api_system():
         "success": True,
         "users": users_list,
         "database": {
-            "path": db_path,
+            "engine": db_engine,
             "size_kb": round(db_size_bytes / 1024, 1),
             "wal_size_kb": round(wal_size_bytes / 1024, 1),
             "journal_mode": journal_mode,
