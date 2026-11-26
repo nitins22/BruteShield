@@ -1,12 +1,21 @@
 venv/
 __pycache__/
 logs/
-*.pkl
 backup_pre_phase1/
-data/
 .env
 .env.local
 .env.production
 *.db-journal
 *.db-wal
 *.db-shm
+
+# Data directories (exclude raw datasets but include ML models)
+data/*
+!data/lanl/
+data/lanl/*
+!data/lanl/trained_model_real_expA.pkl
+!data/lanl/trained_model_real_expB.pkl
+
+# Exclude user databases but allow model files
+*.db
+!trained_model.pkl
