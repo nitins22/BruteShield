@@ -1,12 +1,18 @@
 # BruteShield — Adaptive Cybersecurity Defense Engine & SOC Monitoring Platform
 
+[![Live Demo](https://img.shields.io/badge/Render-Live%20Deployment-success.svg)](https://bruteshield-web.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1.3-green.svg)](https://flask.palletsprojects.com/)
-[![Tests](https://img.shields.io/badge/Tests-75%2F75%20Passing-brightgreen.svg)](tests/)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL%20%7C%20SQLite-blue.svg)](DATABASE_MIGRATION_GUIDE.md)
+[![Tests](https://img.shields.io/badge/Tests-82%2F82%20Passing-brightgreen.svg)](tests/)
 [![Security Audit](https://img.shields.io/badge/OWASP-ASVS%205.0.0%20Verified-blueviolet.svg)](SECURITY_AUDIT.md)
 [![Vulnerabilities](https://img.shields.io/badge/Vulnerabilities-0%20Known%20(pip--audit)-success.svg)](DEPENDENCY_AUDIT.md)
 [![SAST](https://img.shields.io/badge/SAST-Bandit%200%20Flaws-success.svg)](SECURITY_AUDIT.md)
 [![Academic Stage](https://img.shields.io/badge/Submission-Stage%206%20Final%20Handover-orange.svg)](docs/final-submission/)
+
+> **Live Public URL**: [https://bruteshield-web.onrender.com](https://bruteshield-web.onrender.com)  
+> **Production Infrastructure**: Render Web Service (Gunicorn WSGI) + Managed PostgreSQL Database + Automated TLS/HSTS  
+> **Health Check Endpoint**: [https://bruteshield-web.onrender.com/health](https://bruteshield-web.onrender.com/health)
 
 BruteShield is an enterprise-grade, defense-in-depth cybersecurity platform designed to protect web applications against automated credential stuffing, distributed brute force, and stealthy password spraying. Rather than relying on rigid, memoryless threshold counters (e.g. 5 failures in 60s), BruteShield continuously extracts a **six-dimensional statistical and temporal feature vector** across an indexed 900-second sliding window, evaluating authentication velocities and patterns using an unsupervised **Isolation Forest** anomaly detection model.
 
